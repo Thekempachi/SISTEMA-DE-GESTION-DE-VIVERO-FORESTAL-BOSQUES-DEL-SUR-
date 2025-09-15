@@ -1,6 +1,7 @@
 'use strict';
 
-const API_BASE = '../../backend/php/api';
+// Backend API base (Hostinger shared)
+const API_BASE = 'https://im-ventas-de-computadoras.com/SISTEMA-DE-GESTION-DE-VIVERO-FORESTAL-BOSQUES-DEL-SUR-/Sistema_Gestion_Vivero/backend/php/api';
 
 async function api(path, options = {}) {
   const url = `${API_BASE}/${path}`;
