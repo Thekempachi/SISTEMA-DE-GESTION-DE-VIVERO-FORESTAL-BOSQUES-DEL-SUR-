@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vivero Bosques del Sur - Gestión</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script defer src="../js/script.js"></script>
+  <style>
+    /* Fallback minimal styling if CSS not loaded */
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #f6f7f9; }
+    header { background: #184d47; color: #fff; padding: 12px 16px; }
+    nav { display: flex; gap: 12px; padding: 8px 12px; background: #e9eef3; flex-wrap: wrap; }
+    nav button { border: 0; background: #fff; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+    nav button.active { background: #184d47; color: #fff; }
+    main { padding: 16px; }
+    section { display: none; background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    section.active { display: block; }
+    .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; background: #fff; }
+    form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+    .actions { display: flex; gap: 8px; }
+    .muted { color: #666; }
+    .success { color: #0b7; }
+    .error { color: #c00; }
+  </style>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('nav button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.target).classList.add('active');
+        });
+      });
+      document.querySelector('nav button').click();
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Vivero "Bosques del Sur" - Sistema de Gestión</h1>
+  </header>
+  <nav>
+    <button data-target="dashboard">Dashboard</button>
+    <button data-target="especies">Especies</button>
+    <button data-target="lotes">Lotes</button>
+    <button data-target="fases">Fases</button>
+    <button data-target="tratamientos">Tratamientos</button>
+    <button data-target="condiciones">Condiciones</button>
+    <button data-target="plantas">Plantas</button>
+    <button data-target="inventario">Inventario</button>
+    <button data-target="despachos">Despachos</button>
+  </nav>
+  <main>
+    <section id="dashboard" class="active">
+      <div class="grid">
+        <div class="card">
+          <h3>Catálogos</h3>
+          <p>Inicializa catálogos y usuarios base si es necesario.</p>
+          <div class="actions"><button id="seed-btn">Inicializar catálogos</button> <span id="seed-msg" class="muted"></span></div>
+        </div>
+        <div class="card">
+          <h3>Atajos</h3>
+          <ul>
+            <li>1) Cargar Especies</li>
+            <li>2) Registrar Lote de Producción</li>
+            <li>3) Iniciar Fase y registrar resultados</li>
+            <li>4) Registrar tratamientos y condiciones</li>
+            <li>5) Etiquetar Plantas y clasificar</li>
+            <li>6) Registrar Despachos</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="especies">
+      <h2>Especies</h2>
+      <form id="form-especie">
+        <div class="row">
+          <div>
+            <label>Nombre común</label>
+            <input name="nombre_comun" required />
+          </div>
+          <div>
+            <label>Nombre científico</label>
+            <input name="nombre_cientifico" required />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Tipo de especie</label>
+            <select name="tipo_especie_id" id="tipo-especie"></select>
+          </div>
+          <div>
+            <label>Categoría</label>
+            <input name="categoria" />
+          </div>
+        </div>
+        <div>
+          <label>Descripción</label>
+          <textarea name="descripcion"></textarea>
+        </div>
+        <div class="actions"><button>Guardar</button><span id="especie-msg" class="muted"></span></div>
+      </form>
+      <h3>Listado</h3>
+      <table>
+        <thead><tr><th>ID</th><th>Nombre común</th><th>Nombre científico</th><th>Tipo</th></tr></thead>
+        <tbody id="tabla-especies"></tbody>
+      </table>
+    </section>
+
+    <section id="lotes">
+      <h2>Registrar Lote de Producción</h2>
+      <form id="form-lote">
+        <fieldset class="card">
+          <legend>Proveedor</legend>
+          <div class="row">
+            <div><label>Nombre</label><input name="p_nombre" required /></div>
+            <div><label>Contacto</label><input name="p_contacto" /></div>
+          </div>
+          <div class="row">
+            <div><label>Teléfono</label><input name="p_telefono" /></div>
+            <div><label>Email</label><input name="p_email" /></div>
+          </div>
+        </fieldset>
+        <fieldset class="card">
+          <legend>Lote de Semillas</legend>
+          <div class="row">
+            <div><label>Procedencia</label><input name="ls_procedencia" /></div>
+            <div><label>Certificado</label><input name="ls_certificado" /></div>
+          </div>
+          <div class="row">
+            <div><label>Tasa germinación (%)</label><input name="ls_tasa" type="number" step="0.01" /></div>
+            <div><label>Observaciones</label><input name="ls_observaciones" /></div>
+          </div>
+        </fieldset>
+        <fieldset class="card">
+          <legend>Lote de Producción</legend>
+          <div class="row">
+            <div>
+              <label>Especie</label>
+              <select name="lp_especie_id" id="lp-especie"></select>
+            </div>
+            <div><label>Fecha siembra</label><input name="lp_fecha" type="date" required /></div>
+          </div>
+          <div class="row">
+            <div><label>Cantidad de semillas usadas</label><input name="lp_cantidad" type="number" required /></div>
+            <div><label>Notas</label><input name="lp_notas" /></div>
+          </div>
+        </fieldset>
+        <div class="actions"><button>Crear Lote</button><span id="lote-msg" class="muted"></span></div>
+      </form>
+      <h3>Lotes Registrados</h3>
+      <table>
+        <thead><tr><th>Código</th><th>Especie</th><th>Fecha Siembra</th><th>Semillas</th><th>Proveedor</th></tr></thead>
+        <tbody id="tabla-lotes"></tbody>
+      </table>
+    </section>
+
+    <section id="fases">
+      <h2>Gestión de Fases</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Iniciar Fase</h3>
+          <form id="form-iniciar-fase">
+            <label>Lote</label>
+            <select id="if-lote"></select>
+            <label>Fase</label>
+            <select id="if-fase"></select>
+            <label>Ubicación</label>
+            <select id="if-ubicacion"></select>
+            <label>Stock inicial</label>
+            <input id="if-stock" type="number" />
+            <div class="actions"><button>Iniciar</button><span id="if-msg" class="muted"></span></div>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Cerrar Fase</h3>
+          <form id="form-cerrar-fase">
+            <label>Lote</label>
+            <select id="cf-lote"></select>
+            <label>Fase activa del lote</label>
+            <select id="cf-lote-fase"></select>
+            <div class="row">
+              <div><label>Plantas avanzan</label><input id="cf-avanzan" type="number" required /></div>
+              <div><label>Perdidas</label><input id="cf-perdidas" type="number" value="0" /></div>
+            </div>
+            <div class="row">
+              <div><label>Descartes</label><input id="cf-descartes" type="number" value="0" /></div>
+              <div><label>Observaciones</label><input id="cf-observaciones" /></div>
+            </div>
+            <div class="actions"><button>Cerrar</button><span id="cf-msg" class="muted"></span></div>
+          </form>
+        </div>
+      </div>
+      <h3>Historial del Lote</h3>
+      <label>Lote</label>
+      <select id="hist-lote"></select>
+      <table>
+        <thead><tr><th>Fase</th><th>Estado</th><th>Inicio</th><th>Fin</th><th>Stock Inicial</th><th>Stock Disp.</th></tr></thead>
+        <tbody id="tabla-fases"></tbody>
+      </table>
+    </section>
+
+    <section id="tratamientos">
+      <h2>Tratamientos</h2>
+      <form id="form-tratamiento">
+        <label>Lote-Fase</label>
+        <input id="tr-lote-fase" placeholder="ID de lote_fase" />
+        <label>Tipo</label>
+        <select id="tr-tipo"></select>
+        <label>Fecha</label>
+        <input id="tr-fecha" type="datetime-local" />
+        <label>Producto</label>
+        <input id="tr-producto" />
+        <label>Dosis</label>
+        <input id="tr-dosis" />
+        <label>Motivo</label>
+        <input id="tr-motivo" />
+        <label>Observaciones</label>
+        <input id="tr-observaciones" />
+        <div class="actions"><button>Registrar</button><span id="tr-msg" class="muted"></span></div>
+      </form>
+    </section>
+
+    <section id="condiciones">
+      <h2>Condiciones Ambientales</h2>
+      <form id="form-condicion">
+        <label>Lote-Fase</label>
+        <input id="co-lote-fase" placeholder="ID de lote_fase" />
+        <label>Ubicación</label>
+        <select id="co-ubicacion"></select>
+        <div class="row">
+          <div><label>Fecha</label><input id="co-fecha" type="datetime-local" /></div>
+          <div><label>Temperatura (°C)</label><input id="co-temp" type="number" step="0.01" /></div>
+        </div>
+        <div class="row">
+          <div><label>Humedad (%)</label><input id="co-hum" type="number" step="0.01" /></div>
+          <div><label>Precipitaciones (mm)</label><input id="co-prec" type="number" step="0.01" /></div>
+        </div>
+        <label>Observaciones</label>
+        <input id="co-obs" />
+        <div class="actions"><button>Registrar</button><span id="co-msg" class="muted"></span></div>
+      </form>
+    </section>
+
+    <section id="plantas">
+      <h2>Plantas (Fase 3+)</h2>
+      <form id="form-planta">
+        <label>Lote</label>
+        <select id="pl-lote"></select>
+        <label>Estado de salud</label>
+        <select id="pl-salud"></select>
+        <label>Altura (cm)</label>
+        <input id="pl-altura" type="number" step="0.01" />
+        <label>Ubicación</label>
+        <select id="pl-ubicacion"></select>
+        <div class="actions"><button>Etiquetar</button><span id="pl-msg" class="muted"></span></div>
+      </form>
+      <div id="pl-qr" style="margin-top:12px;"></div>
+      <h3>Últimas plantas</h3>
+      <table>
+        <thead><tr><th>ID</th><th>QR</th><th>Especie</th><th>Altura</th></tr></thead>
+        <tbody id="tabla-plantas"></tbody>
+      </table>
+    </section>
+
+    <section id="inventario">
+      <h2>Inventario</h2>
+      <form id="form-inventario">
+        <label>Planta</label>
+        <input id="inv-planta-id" placeholder="ID planta" />
+        <label>Clasificación</label>
+        <select id="inv-calidad"></select>
+        <label>Tamaño</label>
+        <select id="inv-tamano"></select>
+        <div class="actions"><button>Actualizar</button><span id="inv-msg" class="muted"></span></div>
+      </form>
+      <h3>Últimos cambios</h3>
+      <table>
+        <thead><tr><th>Planta</th><th>QR</th><th>Especie</th><th>Clasificación</th><th>Tamaño</th></tr></thead>
+        <tbody id="tabla-inventario"></tbody>
+      </table>
+    </section>
+
+    <section id="despachos">
+      <h2>Despachos</h2>
+      <form id="form-orden">
+        <label>Destino (ID)</label>
+        <input id="od-destino" placeholder="ID destino (gestiona por DB)" />
+        <label>Fecha</label>
+        <input id="od-fecha" type="datetime-local" />
+        <label>Responsable (usuario id)</label>
+        <input id="od-resp" value="1" />
+        <label>Personal de Transporte</label>
+        <input id="od-trans" />
+        <label>Notas</label>
+        <input id="od-notas" />
+        <div class="actions"><button>Crear Orden</button><span id="od-msg" class="muted"></span></div>
+      </form>
+      <form id="form-orden-linea" style="margin-top:12px;">
+        <label>Orden ID</label>
+        <input id="ol-orden" />
+        <label>Planta ID</label>
+        <input id="ol-planta" />
+        <label>Cantidad</label>
+        <input id="ol-cant" type="number" />
+        <label>Estado al despacho</label>
+        <select id="ol-estado"></select>
+        <label>Observaciones</label>
+        <input id="ol-obs" />
+        <div class="actions"><button>Agregar Línea</button><span id="ol-msg" class="muted"></span></div>
+      </form>
+      <h3>Órdenes</h3>
+      <table>
+        <thead><tr><th>Número</th><th>Destino</th><th>Fecha</th><th>Responsable</th><th>Líneas</th></tr></thead>
+        <tbody id="tabla-ordenes"></tbody>
+      </table>
+    </section>
+
+  </main>
+</body>
+</html>
