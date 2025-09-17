@@ -19,6 +19,9 @@ async function logout() {
 
 // Redirect to index if already logged in
 window.addEventListener('DOMContentLoaded', async () => {
+  // Opcional: ayuda de depuración
+  try { console.debug('API_BASE =', (await import('./api.js')).API_BASE); } catch {}
+
   const user = await me();
   if (user) {
     window.location.href = './index.html';
@@ -39,4 +42,23 @@ window.addEventListener('DOMContentLoaded', async () => {
       msg.textContent = e.message;
     }
   });
+
+  // Botón para crear usuario admin de prueba (seed minimal)
+  const seedBtn = document.getElementById('seed-admin-btn');
+  const seedMsg = document.getElementById('seed-admin-msg');
+  if (seedBtn && seedMsg) {
+    seedBtn.addEventListener('click', async () => {
+      seedMsg.textContent = 'Creando usuario admin...';
+      try {
+        await api('catalogs.php?seed=1');
+        seedMsg.textContent = 'Listo: usuario admin/admin123 creado (si no existía).';
+        const u = document.getElementById('username');
+        const p = document.getElementById('password');
+        if (u && p) { u.value = 'admin'; p.value = 'admin123'; }
+      } catch (e) {
+        seedMsg.textContent = e.message;
+      }
+    });
+  }
 });
+

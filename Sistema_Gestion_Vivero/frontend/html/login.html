@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../css/styles.css" />
   <script type="module" src="../js/auth.js"></script>
 </head>
-<body class="center-screen">
+<body class="center-screen login-bg">
   <div class="card w-420 elevated p-20 rounded-12">
     <h1>Vivero "Bosques del Sur"</h1>
     <p class="muted">Inicia sesión para continuar</p>
@@ -19,6 +19,12 @@
       <button type="submit" class="w-full">Ingresar</button>
       <div id="login-msg" class="muted mt-8"></div>
     </form>
+    <hr class="mt-12" />
+    <div class="mt-8">
+      <button id="seed-admin-btn" type="button">Crear usuario admin de prueba</button>
+      <div id="seed-admin-msg" class="muted mt-8"></div>
+      <p class="muted">Esto creará <strong>admin / admin123</strong> si no existe.</p>
+    </div>
   </div>
 </body>
 </html>

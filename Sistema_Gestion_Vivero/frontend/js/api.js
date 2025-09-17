@@ -9,7 +9,8 @@ export const API_BASE = (() => {
     const path = location.pathname.replace(/\\/g, '/');
     const guessed = path.replace(/\/frontend\/html\/.*$/i, '/backend/php/api/');
     if (guessed !== path) {
-      return new URL(guessed, location.origin).toString().replace(/\/$/, '');
+      const norm = guessed.startsWith('/') ? guessed : ('/' + guessed);
+      return (location.origin + norm).replace(/\/$/, '');
     }
   } catch (_) {}
   return `${location.origin}/backend/php/api`;
