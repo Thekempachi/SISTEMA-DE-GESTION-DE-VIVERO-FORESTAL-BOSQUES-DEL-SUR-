@@ -1,6 +1,26 @@
 <?php
 // Simple PDO connection helper and JSON response utilities
-// Hostinger shared hosting defaults (can be overridden via env vars)
+// Hostinger shared hosting friendly: no Composer/.env required
+
+// Basic CORS for development: reflect Origin and allow credentials
+// In producción, restringe el origen explícitamente.
+function setup_cors(): void {
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    if ($origin) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+    }
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Headers: Content-Type');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+        http_response_code(204);
+        exit;
+    }
+}
+
+setup_cors();
+
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('DB_NAME') ?: 'u605613151_vivero_bosques');
 define('DB_USER', getenv('DB_USER') ?: 'u605613151_bosques_sur');
@@ -45,6 +65,59 @@ function require_fields(array $data, array $fields): void {
             send_json(["error" => "Campo requerido: $f"], 400);
         }
     }
+}
+
+// ---- Session & Auth helpers ----
+function ensure_session_started(): void {
+    if (session_status() === PHP_SESSION_NONE) {
+        // Secure session cookie flags when possible
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        session_start();
+    }
+}
+
+function current_user(): ?array {
+    ensure_session_started();
+    return $_SESSION['user'] ?? null;
+}
+
+function set_current_user(?array $user): void {
+    ensure_session_started();
+    if ($user === null) {
+        unset($_SESSION['user']);
+    } else {
+        // Store minimal safe profile
+        $_SESSION['user'] = [
+            'id' => $user['id'] ?? null,
+            'username' => $user['username'] ?? null,
+            'nombre' => $user['nombre'] ?? null,
+            'rol_id' => $user['rol_id'] ?? null,
+            'rol' => $user['rol'] ?? null,
+        ];
+    }
+}
+
+function require_auth(): array {
+    $u = current_user();
+    if (!$u) send_json(['error' => 'No autenticado'], 401);
+    return $u;
+}
+
+function require_role($allowed): array {
+    $u = require_auth();
+    $allowedSet = is_array($allowed) ? $allowed : [$allowed];
+    if (!in_array($u['rol_id'] ?? null, $allowedSet, true) && !in_array($u['rol'] ?? null, $allowedSet, true)) {
+        send_json(['error' => 'No autorizado'], 403);
+    }
+    return $u;
 }
 
 ?>
