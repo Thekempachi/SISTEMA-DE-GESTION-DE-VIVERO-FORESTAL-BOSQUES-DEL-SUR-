@@ -47,8 +47,10 @@ class AuthController {
                 send_json(['error' => $e->getMessage()], 401);
             }
             if ($e instanceof PDOException) {
-                // Error de base de datos
-                send_json(['error' => 'Error de base de datos'], 500);
+                // Error de base de datos: detallar solo en debug
+                $debug = getenv('APP_DEBUG') === '1';
+                $msg = $debug ? ('DB: ' . $e->getMessage()) : 'Error de base de datos';
+                send_json(['error' => $msg], 500);
             }
             // Fallback: error interno genérico
             send_json(['error' => $e->getMessage()], 500);

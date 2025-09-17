@@ -19,4 +19,9 @@ class UserRepository {
         $row = $stmt->fetch();
         return $row ?: null;
     }
+
+    public function updatePasswordHash(int $id, string $newHash): void {
+        $stmt = $this->pdo->prepare("UPDATE usuarios SET password_hash = ? WHERE id = ?");
+        $stmt->execute([$newHash, $id]);
+    }
 }

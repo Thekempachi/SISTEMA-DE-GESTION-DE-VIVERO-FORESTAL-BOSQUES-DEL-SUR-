@@ -1,6 +1,6 @@
 # Sistema de Gestión de Vivero – Despliegue en Hostinger (Compartido)
 
-Esta guía describe únicamente cómo desplegar y ejecutar el proyecto en un hosting compartido (Hostinger) sin dependencias adicionales (sin Composer, sin `.env`). El backend es PHP puro y el frontend son archivos estáticos HTML/JS.
+Esta guía describe cómo desplegar y ejecutar el proyecto en un hosting compartido (Hostinger) sin dependencias adicionales (sin Composer, sin `.env`). El backend es PHP puro y el frontend son archivos estáticos HTML/JS.
 
 ## Estructura a subir a `public_html/`
 
@@ -33,6 +33,14 @@ define('DB_USER', 'tu_usuario');
 define('DB_PASS', 'tu_password');
 ```
 
+### Variables de entorno (opcional, para debug)
+
+En Hostinger hPanel, puedes definir variables de entorno para activar el modo debug:
+- `APP_DEBUG=1` (activa mensajes detallados de error y endpoints de diagnóstico)
+- `APP_DEBUG=0` (o no definida, modo producción)
+
+**Importante:** El modo debug (`APP_DEBUG=1`) solo debe usarse temporalmente para diagnóstico, ya que expone información sensible.
+
 El archivo ya maneja CORS básico y sesiones PHP. No es necesario configurar Composer ni `.env`.
 
 ## URLs principales (mismo dominio)
@@ -47,11 +55,21 @@ El archivo `frontend/js/api.js` calcula la ruta de la API en relativo partiendo 
 
 ## Inicialización (catálogos y usuario admin)
 
-1. Visita `index.html` (Dashboard) y pulsa “Inicializar catálogos” o abre:
-   - `https://TU-DOMINIO/.../Sistema_Gestion_Vivero/backend/php/api/catalogs.php?seed=1`
-2. Se crearán catálogos base y el usuario admin si no existe:
+### Opción A: Desde el frontend
+1. Visita `login.html`
+2. Pulsa el botón "Crear usuario admin de prueba"
+3. Se crearán catálogos base y el usuario admin si no existe:
    - Usuario: `admin`
    - Contraseña: `admin123`
+4. Los campos se autocompletarán para iniciar sesión
+
+### Opción B: Directamente por URL
+Abre:
+- `https://TU-DOMINIO/.../Sistema_Gestion_Vivero/backend/php/api/catalogs.php?seed=1`
+
+### Opción C: Desde el Dashboard
+1. Visita `index.html` (Dashboard)
+2. Pulsa "Inicializar catálogos"
 
 ## Autenticación y Seguridad
 
@@ -62,6 +80,42 @@ El archivo `frontend/js/api.js` calcula la ruta de la API en relativo partiendo 
   - DELETE: solo Admin (1)
   - Módulos: Especies, Lotes, Fases, Plantas, Inventario, Tratamientos, Condiciones, Despachos
 - Lecturas (GET) quedan públicas por compatibilidad. Si deseas forzar autenticación en GET, podemos activarlo.
+
+### Migración automática de contraseñas
+
+El sistema soporta usuarios con contraseñas en texto plano (migración automática):
+1. Si un usuario tiene contraseña en texto plano en `password_hash`, al iniciar sesión:
+   - El sistema verifica la contraseña en texto plano
+   - Si es correcta, la migra automáticamente a un hash seguro (`password_hash`)
+   - Las siguientes sesiones usan el hash seguro
+2. Esto permite migrar usuarios existentes sin perder acceso
+
+### Endpoints de diagnóstico (solo con APP_DEBUG=1)
+
+#### `backend/php/api/db_check.php`
+Verifica el estado del sistema:
+- Versión de PHP
+- Drivers PDO disponibles
+- Conexión a base de datos
+- Cantidad de usuarios
+- Detalles del usuario admin (si existe)
+
+**Uso:**
+```bash
+curl "https://TU-DOMINIO/.../backend/php/api/db_check.php"
+```
+
+#### `backend/php/api/set_password.php`
+Permite asignar/actualizar contraseñas de forma segura (solo en debug):
+
+**Uso:**
+```bash
+curl -i -H "Content-Type: application/json" -X POST \
+  -d '{"username":"admin","new_password":"NuevaClaveFuerte#2025"}' \
+  "https://TU-DOMINIO/.../backend/php/api/set_password.php"
+```
+
+**Importante:** Desactiva `APP_DEBUG` después de usar estos endpoints.
 
 ## Uso (flujo básico)
 
@@ -90,7 +144,97 @@ El archivo `frontend/js/api.js` calcula la ruta de la API en relativo partiendo 
 
 ## Solución de problemas rápida
 
-- No carga la API: revisa `backend/php/conection.php` (credenciales). Verifica que `api/*.php` sean accesibles por URL.
-- No mantiene sesión: confirma que el frontend y backend estén en el mismo dominio/ruta y que `credentials: 'include'` esté activo (ya lo está en `api.js`).
-- 403 al crear/editar: el usuario no tiene rol adecuado. Revisa `rol_id` del usuario en DB (1=Admin, 2=Técnico).
-- Dashboard vacío: pulsa “Inicializar catálogos” en `index.html` y recarga. Asegura datos en tablas.
+### Errores comunes
+
+#### 500 Internal Server Error
+1. **Activa el modo debug:**
+   - En Hostinger hPanel → Environment Variables → `APP_DEBUG=1`
+2. **Revisa el log de errores:**
+   - Hostinger hPanel → Error Logs
+3. **Usa el endpoint de diagnóstico:**
+   ```bash
+   curl "https://TU-DOMINIO/.../backend/php/api/db_check.php"
+   ```
+4. **Verifica:**
+   - Extensión `pdo_mysql` activada en Hostinger
+   - Credenciales de BD correctas en `conection.php`
+   - PHP versión 8.x
+
+#### 401 Unauthorized
+- Usuario o contraseña incorrectos
+- Si es usuario existente con contraseña en texto plano, verifica que coincida exactamente
+- Revisa la tabla `usuarios` en phpMyAdmin
+
+#### 403 Forbidden
+- El usuario no tiene el rol adecuado para la operación
+- Revisa `rol_id` en la tabla `usuarios` (1=Admin, 2=Técnico)
+
+#### No mantiene sesión
+- Confirma que frontend y backend estén en el mismo dominio
+- Verifica que `credentials: 'include'` esté en `frontend/js/api.js` (ya está configurado)
+- Limpia cookies del navegador y prueba de nuevo
+
+#### Dashboard vacío
+- Pulsa "Inicializar catálogos" en `index.html`
+- Revisa que existan datos en las tablas:
+  - `usuarios`
+  - `roles`
+  - `especies`
+  - `lotes`
+  - `fases_lote`
+
+### Pasos de diagnóstico completos
+
+1. **Verificar estructura de archivos:**
+   ```bash
+   ls -la public_html/.../Sistema_Gestion_Vivero/
+   ```
+
+2. **Probar conexión a BD:**
+   ```bash
+   curl "https://TU-DOMINIO/.../backend/php/api/db_check.php"
+   ```
+
+3. **Crear usuario admin:**
+   ```bash
+   curl "https://TU-DOMINIO/.../backend/php/api/catalogs.php?seed=1"
+   ```
+
+4. **Verificar usuario en BD:**
+   ```sql
+   SELECT id, username, password_hash, rol_id FROM usuarios WHERE username = 'admin';
+   ```
+
+5. **Probar login:**
+   - Abre `login.html`
+   - Usuario: `admin`, Contraseña: `admin123`
+
+6. **Si falla login con usuarios existentes:**
+   - Verifica que la contraseña en `password_hash` sea texto plano (no empiece con `$`)
+   - Usa `set_password.php` para asignar una nueva contraseña segura
+
+### Migración de usuarios existentes
+
+Si tienes usuarios con contraseñas en texto plano:
+1. **Verifica el estado actual:**
+   ```sql
+   SELECT id, username, password_hash FROM usuarios;
+   ```
+2. **Para cambiar contraseñas a valores seguros:**
+   ```bash
+   curl -i -H "Content-Type: application/json" -X POST \
+     -d '{"username":"usuario","new_password":"NuevaClaveFuerte#2025"}' \
+     "https://TU-DOMINIO/.../backend/php/api/set_password.php"
+   ```
+3. **O deja que el sistema migre automáticamente:**
+   - Los usuarios inician sesión con su contraseña actual (texto plano)
+   - El sistema la migra a hash seguro en el primer login exitoso
+
+### Notas finales
+
+- **Desactiva `APP_DEBUG` en producción**
+- **Usa contraseñas fuertes** para todos los usuarios
+- **Verifica permisos de archivos:** 644 para archivos, 755 para carpetas
+- **Limpia caché del navegador** después de cada cambio
+
+Si persisten los problemas, revisa los logs de error de Hostinger y comparte el resultado de `db_check.php`.

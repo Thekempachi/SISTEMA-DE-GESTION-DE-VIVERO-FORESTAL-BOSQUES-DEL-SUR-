@@ -16,7 +16,13 @@ class CatalogsController {
             $catalogs = $service->getAll();
             send_json(['ok' => true, 'catalogs' => $catalogs]);
         } catch (Throwable $e) {
-            send_json(['error' => $e->getMessage()], 500);
+            if ($e instanceof PDOException) {
+                $debug = getenv('APP_DEBUG') === '1';
+                $msg = $debug ? ('DB: ' . $e->getMessage()) : 'Error de base de datos';
+                send_json(['error' => $msg], 500);
+            } else {
+                send_json(['error' => $e->getMessage()], 500);
+            }
         }
     }
 }

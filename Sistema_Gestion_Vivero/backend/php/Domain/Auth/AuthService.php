@@ -8,7 +8,29 @@ class AuthService {
 
     public function login(string $username, string $password): array {
         $user = $this->users->getByUsername($username);
-        if (!$user || empty($user['password_hash']) || !password_verify($password, $user['password_hash'])) {
+        if (!$user) {
+            throw new InvalidArgumentException('Credenciales inválidas');
+        }
+
+        $stored = (string)($user['password_hash'] ?? '');
+        $isHashLike = strlen($stored) > 0 && $stored[0] === '$';
+
+        $verified = false;
+        if ($isHashLike) {
+            $verified = password_verify($password, $stored);
+        } else {
+            // Migration path: legacy plaintext stored in password_hash column
+            // If provided password equals the stored plaintext, accept and migrate to a secure hash
+            if ($stored !== '' && hash_equals($stored, $password)) {
+                $verified = true;
+                // Migrate to secure hash immediately
+                $newHash = password_hash($password, PASSWORD_DEFAULT);
+                try { $this->users->updatePasswordHash((int)$user['id'], $newHash); } catch (Throwable $e) { /* ignore but continue */ }
+                $user['password_hash'] = $newHash;
+            }
+        }
+
+        if (!$verified) {
             throw new InvalidArgumentException('Credenciales inválidas');
         }
         // Regenerar ID de sesión para evitar fijación
