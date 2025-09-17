@@ -31,7 +31,18 @@ class AuthController {
 
             send_json(['error' => 'Método o acción no permitidos'], 405);
         } catch (Throwable $e) {
+            // Devuelve códigos adecuados según el tipo de error
+            if ($e instanceof InvalidArgumentException) {
+                // Credenciales inválidas, no es error del servidor
+                send_json(['error' => $e->getMessage()], 401);
+            }
+            if ($e instanceof PDOException) {
+                // Error de base de datos
+                send_json(['error' => 'Error de base de datos'], 500);
+            }
+            // Fallback: error interno genérico
             send_json(['error' => $e->getMessage()], 500);
         }
     }
 }
+
