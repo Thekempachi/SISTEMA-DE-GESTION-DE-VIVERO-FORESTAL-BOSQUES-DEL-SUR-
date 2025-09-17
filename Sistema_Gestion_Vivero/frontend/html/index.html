@@ -7,28 +7,6 @@
   <link rel="stylesheet" href="../css/styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script defer src="../js/script.js"></script>
-  <style>
-    /* Fallback minimal styling if CSS not loaded */
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #f6f7f9; }
-    header { background: #184d47; color: #fff; padding: 12px 16px; }
-    nav { display: flex; gap: 12px; padding: 8px 12px; background: #e9eef3; flex-wrap: wrap; }
-    nav button { border: 0; background: #fff; padding: 8px 12px; border-radius: 6px; cursor: pointer; color:#1f2937; }
-    nav button.active { background: #184d47; color: #fff; }
-    main { padding: 16px; }
-    section { display: none; background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-    section.active { display: block; }
-    .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-    .card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; background: #fff; }
-    form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
-    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
-    .actions { display: flex; gap: 8px; }
-    .muted { color: #666; }
-    .success { color: #0b7; }
-    .error { color: #c00; }
-  </style>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('nav button').forEach(btn => {
@@ -264,7 +242,7 @@
         <select id="pl-ubicacion"></select>
         <div class="actions"><button>Etiquetar</button><span id="pl-msg" class="muted"></span></div>
       </form>
-      <div id="pl-qr" style="margin-top:12px;"></div>
+      <div id="pl-qr"></div>
       <h3>Últimas plantas</h3>
       <table>
         <thead><tr><th>ID</th><th>QR</th><th>Especie</th><th>Altura</th></tr></thead>
@@ -305,7 +283,7 @@
         <input id="od-notas" />
         <div class="actions"><button>Crear Orden</button><span id="od-msg" class="muted"></span></div>
       </form>
-      <form id="form-orden-linea" style="margin-top:12px;">
+      <form id="form-orden-linea">
         <label>Orden ID</label>
         <input id="ol-orden" />
         <label>Planta ID</label>

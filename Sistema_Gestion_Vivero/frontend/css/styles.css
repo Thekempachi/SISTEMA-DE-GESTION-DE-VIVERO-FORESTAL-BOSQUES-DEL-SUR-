@@ -26,3 +26,6 @@ th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
 .muted{color:var(--muted)}
 .success{color:#0a9955}
 .error{color:#c00000}
+/* Moved from inline styles in index.html */
+#pl-qr{margin-top:12px}
+#form-orden-linea{margin-top:12px}
