@@ -87,14 +87,28 @@ function ensure_session_started(): void {
         $sameSite = $isCrossSite ? 'None' : 'Lax';
         if ($isCrossSite) { $secure = true; }
 
-        session_set_cookie_params([
-            'lifetime' => 0,
-            'path' => '/',
-            'domain' => '',
-            'secure' => $secure,
-            'httponly' => true,
-            'samesite' => $sameSite,
-        ]);
+        if (defined('PHP_VERSION_ID') && PHP_VERSION_ID >= 70300) {
+            // PHP 7.3+ soporta el array con 'samesite'
+            session_set_cookie_params([
+                'lifetime' => 0,
+                'path' => '/',
+                'domain' => '',
+                'secure' => $secure,
+                'httponly' => true,
+                'samesite' => $sameSite,
+            ]);
+        } else {
+            // Fallback PHP < 7.3: usar forma antigua e incluir SameSite en path
+            $path = '/';
+            // Algunos servidores aceptan agregar "; samesite=..." en el path
+            $pathWithSameSite = $path . '; samesite=' . strtolower($sameSite);
+            // domain vacío para default host
+            session_set_cookie_params(0, $pathWithSameSite, '', $secure, true);
+            // Intentar también mediante ini para mayor compatibilidad
+            @ini_set('session.cookie_samesite', $sameSite);
+            @ini_set('session.cookie_secure', $secure ? '1' : '0');
+            @ini_set('session.cookie_httponly', '1');
+        }
         session_start();
     }
 }

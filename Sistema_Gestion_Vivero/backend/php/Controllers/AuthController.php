@@ -6,18 +6,20 @@ require_once __DIR__ . '/../Domain/Auth/UserRepository.php';
 class AuthController {
     public static function handle(): void {
         try {
-            $pdo = db();
-            $service = new AuthService(new UserRepository($pdo));
             $method = http_method();
             $action = $_GET['action'] ?? 'me';
 
             if ($method === 'GET' && $action === 'me') {
-                $me = $service->me();
+                // No requiere BD
+                $me = current_user();
                 if (!$me) send_json(['error' => 'No autenticado'], 401);
                 send_json(['ok' => true, 'user' => $me]);
             }
 
             if ($method === 'POST' && $action === 'login') {
+                // Requiere BD
+                $pdo = db();
+                $service = new AuthService(new UserRepository($pdo));
                 $data = json_input();
                 require_fields($data, ['username', 'password']);
                 $user = $service->login($data['username'], $data['password']);
@@ -25,7 +27,15 @@ class AuthController {
             }
 
             if ($method === 'POST' && $action === 'logout') {
-                $service->logout();
+                // No requiere BD
+                ensure_session_started();
+                set_current_user(null);
+                $_SESSION = [];
+                if (ini_get('session.use_cookies')) {
+                    $params = session_get_cookie_params();
+                    setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+                }
+                session_destroy();
                 send_json(['ok' => true]);
             }
 
