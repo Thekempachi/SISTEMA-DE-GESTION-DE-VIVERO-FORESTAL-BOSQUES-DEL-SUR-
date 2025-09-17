@@ -2,18 +2,36 @@
 'use strict';
 
 // Backend API base para hosting compartido (misma cuenta/dominio):
-// Se calcula en base a la ubicación de index.html/login.html
-// frontend/html -> backend/php/api  (subir dos niveles y entrar a backend/php/api)
-export const API_BASE = new URL('../../backend/php/api/', location.href).toString().replace(/\/$/, '');
+// Intenta derivar desde la ubicación actual (e.g., /frontend/html/login.html -> /backend/php/api/).
+// Si no coincide la estructura, usa fallback absoluto: origin + /backend/php/api
+export const API_BASE = (() => {
+  try {
+    const path = location.pathname.replace(/\\/g, '/');
+    const guessed = path.replace(/\/frontend\/html\/.*$/i, '/backend/php/api/');
+    if (guessed !== path) {
+      return new URL(guessed, location.origin).toString().replace(/\/$/, '');
+    }
+  } catch (_) {}
+  return `${location.origin}/backend/php/api`;
+})();
 
 export async function api(path, options = {}) {
   const url = `${API_BASE}/${path}`;
   const opts = { headers: { 'Content-Type': 'application/json' }, credentials: 'include', ...options };
   if (opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
   const res = await fetch(url, opts);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || data.error) throw new Error(data.error || `Error ${res.status}`);
-  return data;
+  let data = null;
+  let text = '';
+  try {
+    data = await res.json();
+  } catch (_) {
+    try { text = await res.text(); } catch (_) {}
+  }
+  if (!res.ok || (data && data.error)) {
+    const msg = (data && data.error) || text || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data ?? {};
 }
 
 export const state = { catalogs: {}, especies: [], lotes: [] };
@@ -30,3 +48,4 @@ export function fillSelect(el, items, opts = {}) {
     el.appendChild(o);
   }
 }
+

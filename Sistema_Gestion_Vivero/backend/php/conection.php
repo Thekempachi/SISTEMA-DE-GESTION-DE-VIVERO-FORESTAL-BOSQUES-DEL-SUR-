@@ -5,13 +5,18 @@
 // Basic CORS for development: reflect Origin and allow credentials
 // In producción, restringe el origen explícitamente.
 function setup_cors(): void {
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if ($origin) {
-        header('Access-Control-Allow-Origin: ' . $origin);
+    $incomingOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    $allowed = getenv('CORS_ALLOW_ORIGIN') ?: '';
+    // Si se configura CORS_ALLOW_ORIGIN, úsalo; si no, refleja el origin entrante (recomendado en mismo dominio)
+    if ($allowed !== '') {
+        header('Access-Control-Allow-Origin: ' . $allowed);
+        header('Vary: Origin');
+    } elseif ($incomingOrigin) {
+        header('Access-Control-Allow-Origin: ' . $incomingOrigin);
         header('Vary: Origin');
     }
     header('Access-Control-Allow-Credentials: true');
-    header('Access-Control-Allow-Headers: Content-Type');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
         http_response_code(204);
@@ -28,7 +33,7 @@ define('DB_PASS', getenv('DB_PASS') ?: 'C0ntrsen@102');
 
 function db(): PDO {
     static $pdo = null;
-    if ($pdo === null) {
+    if ($pdo === null) {z
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4';
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -71,14 +76,24 @@ function require_fields(array $data, array $fields): void {
 function ensure_session_started(): void {
     if (session_status() === PHP_SESSION_NONE) {
         // Secure session cookie flags when possible
-        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+        $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $forwardedProto === 'https';
+
+        $originHost = parse_url($_SERVER['HTTP_ORIGIN'] ?? '', PHP_URL_HOST) ?: '';
+        $serverHost = $_SERVER['HTTP_HOST'] ?? '';
+        $isCrossSite = ($originHost && strcasecmp($originHost, $serverHost) !== 0);
+
+        // En cross-site, los navegadores requieren SameSite=None y Secure=true para enviar cookies
+        $sameSite = $isCrossSite ? 'None' : 'Lax';
+        if ($isCrossSite) { $secure = true; }
+
         session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',
             'domain' => '',
             'secure' => $secure,
             'httponly' => true,
-            'samesite' => 'Lax',
+            'samesite' => $sameSite,
         ]);
         session_start();
     }
