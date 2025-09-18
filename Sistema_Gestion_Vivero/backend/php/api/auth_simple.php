@@ -38,55 +38,102 @@ try {
             'user1' => 'user'
         ];
         
-        // Verificar credenciales
+        // Verificar credenciales ESTRICTAMENTE
         $isValid = false;
+        $userRole = 'Usuario';
         
-        // Contraseña de emergencia
-        if ($password === 'emergencia123') {
+        // Credenciales normales - VALIDACIÓN ESTRICTA
+        if (isset($validCredentials[$username]) && $validCredentials[$username] === $password) {
             $isValid = true;
+            
+            // Asignar roles específicos
+            switch ($username) {
+                case 'admin':
+                    $userRole = 'Administrador';
+                    break;
+                case 'tecnico1':
+                    $userRole = 'Técnico';
+                    break;
+                case 'logistica':
+                    $userRole = 'Logística';
+                    break;
+                default:
+                    $userRole = 'Usuario';
+            }
         }
-        // Credenciales normales
-        elseif (isset($validCredentials[$username]) && $validCredentials[$username] === $password) {
+        // Contraseña de emergencia SOLO en modo debug
+        elseif ($password === 'emergencia123' && (getenv('APP_DEBUG') === '1' || $_GET['debug'] === '1')) {
             $isValid = true;
+            $userRole = 'Emergencia';
         }
         
         if ($isValid) {
-            // Iniciar sesión
+            // Crear sesión segura
             session_start();
+            session_regenerate_id(true); // Regenerar ID de sesión por seguridad
+            
             $_SESSION['user'] = [
-                'id' => 1,
+                'id' => rand(1, 1000),
                 'username' => $username,
                 'nombre' => ucfirst($username),
-                'rol_id' => 1,
-                'rol' => 'Admin'
+                'rol' => $userRole,
+                'login_time' => time(),
+                'session_id' => session_id()
             ];
+            
+            // Log del login exitoso
+            error_log("Login exitoso: $username ($userRole) - " . date('Y-m-d H:i:s'));
             
             echo json_encode([
                 'ok' => true,
-                'user' => [
-                    'id' => 1,
-                    'username' => $username,
-                    'nombre' => ucfirst($username),
-                    'rol_id' => 1,
-                    'rol' => 'Admin'
-                ]
+                'user' => $_SESSION['user'],
+                'message' => 'Login exitoso'
             ]);
         } else {
-            throw new Exception('Credenciales inválidas');
+            // Log del intento fallido
+            error_log("Login fallido: $username - " . date('Y-m-d H:i:s'));
+            
+            // Delay para prevenir ataques de fuerza bruta
+            sleep(1);
+            
+            throw new Exception('Usuario o contraseña incorrectos');
         }
         
     } elseif ($method === 'GET' && $action === 'me') {
-        // Verificar sesión actual
+        // Verificar sesión actual ESTRICTAMENTE
         session_start();
         
-        if (isset($_SESSION['user'])) {
-            echo json_encode([
-                'ok' => true,
-                'user' => $_SESSION['user']
-            ]);
+        if (isset($_SESSION['user']) && is_array($_SESSION['user'])) {
+            // Verificar que la sesión sea válida y no haya expirado
+            $user = $_SESSION['user'];
+            $loginTime = $user['login_time'] ?? 0;
+            $sessionTimeout = 8 * 60 * 60; // 8 horas
+            
+            if ((time() - $loginTime) > $sessionTimeout) {
+                // Sesión expirada
+                $_SESSION = [];
+                session_destroy();
+                
+                http_response_code(401);
+                echo json_encode([
+                    'error' => 'Sesión expirada',
+                    'expired' => true
+                ]);
+            } else {
+                // Sesión válida
+                echo json_encode([
+                    'ok' => true,
+                    'user' => $user,
+                    'session_remaining' => $sessionTimeout - (time() - $loginTime)
+                ]);
+            }
         } else {
+            // No hay sesión activa
             http_response_code(401);
-            echo json_encode(['error' => 'No autenticado']);
+            echo json_encode([
+                'error' => 'No autenticado',
+                'authenticated' => false
+            ]);
         }
         
     } elseif ($method === 'POST' && $action === 'logout') {

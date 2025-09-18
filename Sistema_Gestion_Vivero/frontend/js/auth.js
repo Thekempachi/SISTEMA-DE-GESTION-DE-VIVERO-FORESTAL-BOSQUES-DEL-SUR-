@@ -270,19 +270,55 @@ async function handleLogout(button = null) {
   }
 }
 
-// Función para asegurar autenticación
+// Función para asegurar autenticación con validación estricta
 async function ensureAuth() {
   try {
-    const user = await me();
-    if (!user) {
-      // Redirigir al login si no hay usuario autenticado
-      window.location.href = './login.html';
-      throw new Error('No autenticado');
+    const response = await fetch(`${API_BASE}/auth.php?action=me`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      // Error HTTP - no autenticado
+      throw new Error(`HTTP ${response.status}: No autenticado`);
     }
+
+    const data = await response.json();
+    
+    if (!data.ok || !data.user) {
+      // Respuesta inválida o sin usuario
+      throw new Error(data.error || 'Sesión inválida');
+    }
+
+    // Verificar que el usuario tenga los campos necesarios
+    const user = data.user;
+    if (!user.username || !user.rol) {
+      throw new Error('Datos de usuario incompletos');
+    }
+
+    // Sesión válida
+    console.log(`Usuario autenticado: ${user.username} (${user.rol})`);
     return user;
+
   } catch (error) {
-    // Redirigir al login en caso de error
-    window.location.href = './login.html';
+    console.log(`Error de autenticación: ${error.message}`);
+    
+    // Solo redirigir si no estamos ya en la página de login
+    if (!window.location.pathname.includes('login.html')) {
+      // Mostrar mensaje antes de redirigir
+      if (error.message.includes('expirada')) {
+        alert('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
+      }
+      
+      // Limpiar datos locales
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirigir al login
+      window.location.href = './login.html';
+    }
+    
     throw error;
   }
 }
