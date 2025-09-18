@@ -22,7 +22,7 @@ try {
                 'especie_id' => 1,
                 'especie' => 'Pino',
                 'fecha_siembra' => '2024-01-15',
-                'cantidad_semillas' => 100,
+                'cantidad_semillas_usadas' => 100,
                 'proveedor' => 'Semillas del Norte',
                 'notas' => 'Lote de prueba'
             ],
@@ -32,7 +32,7 @@ try {
                 'especie_id' => 2,
                 'especie' => 'Rosa',
                 'fecha_siembra' => '2024-02-01',
-                'cantidad_semillas' => 50,
+                'cantidad_semillas_usadas' => 50,
                 'proveedor' => 'Vivero Central',
                 'notas' => 'Variedades mixtas'
             ]
@@ -49,11 +49,34 @@ try {
             throw new Exception('Datos JSON inválidos');
         }
         
+        $newId = rand(3, 100);
+        $newCodigo = 'LOT-' . str_pad(rand(3, 999), 3, '0', STR_PAD_LEFT);
+        
+        // Especies disponibles
+        $especies = [
+            1 => 'Pino',
+            2 => 'Rosa', 
+            3 => 'Eucalipto'
+        ];
+        
+        $especieId = $data['lote_produccion']['especie_id'] ?? 1;
+        $especieNombre = $especies[$especieId] ?? 'Especie Desconocida';
+        
         echo json_encode([
             'ok' => true, 
-            'id' => rand(3, 100),
-            'codigo' => 'LOT-' . str_pad(rand(3, 999), 3, '0', STR_PAD_LEFT),
-            'message' => 'Lote creado correctamente'
+            'id' => $newId,
+            'codigo' => $newCodigo,
+            'message' => 'Lote creado correctamente',
+            'data' => [
+                'id' => $newId,
+                'codigo' => $newCodigo,
+                'especie_id' => $especieId,
+                'especie' => $especieNombre,
+                'fecha_siembra' => $data['lote_produccion']['fecha_siembra'] ?? date('Y-m-d'),
+                'cantidad_semillas_usadas' => $data['lote_produccion']['cantidad_semillas_usadas'] ?? 0,
+                'proveedor' => $data['proveedor']['nombre'] ?? 'Proveedor',
+                'notas' => $data['lote_produccion']['notas'] ?? ''
+            ]
         ]);
         
     } else {

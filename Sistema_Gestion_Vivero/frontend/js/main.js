@@ -248,10 +248,24 @@ function bindForms() {
         const msg = document.getElementById('especie-msg');
         if (msg) msg.textContent = 'Guardando...';
         
-        await api('especies.php', { method: 'POST', body });
+        const result = await api('especies.php', { method: 'POST', body });
         if (msg) msg.textContent = 'Guardado';
+        
+        // Agregar la nueva especie a la tabla inmediatamente
+        if (result.data) {
+          state.especies.push(result.data);
+          const tbody = document.getElementById('tabla-especies');
+          if (tbody) {
+            const newRow = `<tr><td>${result.data.id}</td><td>${result.data.nombre_comun}</td><td>${result.data.nombre_cientifico}</td><td>${result.data.tipo_especie}</td></tr>`;
+            tbody.innerHTML += newRow;
+          }
+          
+          // Actualizar también el select de especies en lotes
+          const lpEsp = document.getElementById('lp-especie'); 
+          if (lpEsp) fillSelect(lpEsp, state.especies, { label: 'nombre_comun' });
+        }
+        
         fe.reset();
-        await listEspecies();
       } catch (e) {
         const msg = document.getElementById('especie-msg');
         if (msg) msg.textContent = e.message;
@@ -277,10 +291,27 @@ function bindForms() {
         const msg = document.getElementById('lote-msg');
         if (msg) msg.textContent = 'Creando...';
         
-        await api('lotes.php?action=create_all', { method: 'POST', body });
+        const result = await api('lotes.php?action=create_all', { method: 'POST', body });
         if (msg) msg.textContent = 'Creado';
+        
+        // Agregar el nuevo lote a la tabla inmediatamente
+        if (result.data) {
+          state.lotes.push(result.data);
+          const tbody = document.getElementById('tabla-lotes');
+          if (tbody) {
+            const newRow = `<tr><td>${result.data.codigo}</td><td>${result.data.especie}</td><td>${result.data.fecha_siembra}</td><td>${result.data.cantidad_semillas_usadas}</td><td>${result.data.proveedor}</td></tr>`;
+            tbody.innerHTML += newRow;
+          }
+          
+          // Actualizar también los selects de lotes
+          const lotesSelIds = ['if-lote','cf-lote','hist-lote','pl-lote'];
+          lotesSelIds.forEach(id => { 
+            const el = document.getElementById(id); 
+            if (el) fillSelect(el, state.lotes, { value: 'id', label: 'codigo' }); 
+          });
+        }
+        
         fl.reset();
-        await listLotes();
       } catch (e) {
         const msg = document.getElementById('lote-msg');
         if (msg) msg.textContent = e.message;

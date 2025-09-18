@@ -64,10 +64,29 @@ try {
             }
         }
         
+        $newId = rand(4, 100);
+        
+        // Determinar el tipo de especie
+        $tipoNombre = 'Desconocido';
+        switch($data['tipo_especie_id']) {
+            case 1: $tipoNombre = 'Árbol'; break;
+            case 2: $tipoNombre = 'Arbusto'; break;
+            case 3: $tipoNombre = 'Hierba'; break;
+        }
+        
         echo json_encode([
             'ok' => true, 
-            'id' => rand(4, 100),
-            'message' => 'Especie creada correctamente'
+            'id' => $newId,
+            'message' => 'Especie creada correctamente',
+            'data' => [
+                'id' => $newId,
+                'nombre_comun' => $data['nombre_comun'],
+                'nombre_cientifico' => $data['nombre_cientifico'],
+                'tipo_especie_id' => $data['tipo_especie_id'],
+                'tipo_especie' => $tipoNombre,
+                'categoria' => $data['categoria'] ?? '',
+                'descripcion' => $data['descripcion'] ?? ''
+            ]
         ]);
         
     } else {

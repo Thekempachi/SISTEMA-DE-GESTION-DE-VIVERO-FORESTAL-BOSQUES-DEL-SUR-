@@ -47,6 +47,21 @@ try {
                 ['id' => 1, 'nombre' => 'Riego'],
                 ['id' => 2, 'nombre' => 'Fertilización'],
                 ['id' => 3, 'nombre' => 'Poda']
+            ],
+            'clasificaciones_calidad' => [
+                ['id' => 1, 'nombre' => 'Excelente'],
+                ['id' => 2, 'nombre' => 'Buena'],
+                ['id' => 3, 'nombre' => 'Regular']
+            ],
+            'tamanos_plantas' => [
+                ['id' => 1, 'codigo' => 'S', 'nombre' => 'Pequeño'],
+                ['id' => 2, 'codigo' => 'M', 'nombre' => 'Mediano'],
+                ['id' => 3, 'codigo' => 'L', 'nombre' => 'Grande']
+            ],
+            'estado_salud' => [
+                ['id' => 1, 'nombre' => 'Saludable'],
+                ['id' => 2, 'nombre' => 'Enfermo'],
+                ['id' => 3, 'nombre' => 'Recuperándose']
             ]
         ];
         

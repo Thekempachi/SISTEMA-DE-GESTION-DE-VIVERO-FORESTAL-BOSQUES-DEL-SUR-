@@ -1,7 +1,4 @@
 <?php
-require_once __DIR__ . '/../controllers/InventarioController.php';
-
-// Delegar toda la lógica al controlador manteniendo la ruta y el contrato
-InventarioController::handle();
-?>
+// Usar API simple por ahora
+include __DIR__ . '/inventario_simple.php';
 
