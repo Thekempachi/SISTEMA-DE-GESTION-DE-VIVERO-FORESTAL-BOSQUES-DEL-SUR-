@@ -1,6 +1,7 @@
 'use strict';
 
 import { api, fillSelect, state } from './api.js';
+import { ensureAuth } from './auth.js';
 
 // --- Dashboard helpers ---
 async function renderKPIs() {

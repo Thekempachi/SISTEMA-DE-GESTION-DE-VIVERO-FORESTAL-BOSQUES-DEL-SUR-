@@ -1,7 +1,7 @@
 import { API_BASE, api } from './api.js';
 
 // Exportar funciones para uso en otros módulos
-export { login, me, logout, handleLogout };
+export { login, me, logout, handleLogout, ensureAuth };
 
 // Inicializar funcionalidad del login cuando se carga el DOM
 document.addEventListener('DOMContentLoaded', function() {
@@ -270,6 +270,23 @@ async function handleLogout(button = null) {
   }
 }
 
+// Función para asegurar autenticación
+async function ensureAuth() {
+  try {
+    const user = await me();
+    if (!user) {
+      // Redirigir al login si no hay usuario autenticado
+      window.location.href = './login.html';
+      throw new Error('No autenticado');
+    }
+    return user;
+  } catch (error) {
+    // Redirigir al login en caso de error
+    window.location.href = './login.html';
+    throw error;
+  }
+}
+
 // Redirect to index if already logged in
 window.addEventListener('DOMContentLoaded', async () => {
   // Diagnóstico: mostrar URL de API
@@ -278,14 +295,19 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.debug('Hostname:', location.hostname);
     console.debug('Pathname:', location.pathname);
   } catch (e) {
-    console.debug('Error en diagnóstico:', e);
+    console.debug('Error en handleLogout():', e.message);
   }
 
-  const user = await me();
-  if (user) {
-    window.location.href = './index.html';
-    return;
+  try {
+    const user = await ensureAuth();
+    if (user) {
+      window.location.href = './index.html';
+      return;
+    }
+  } catch (error) {
+    console.error('Error en autenticación:', error);
   }
+
   const form = document.getElementById('login-form');
   const msg = document.getElementById('login-msg');
   const usernameInput = document.getElementById('username');
