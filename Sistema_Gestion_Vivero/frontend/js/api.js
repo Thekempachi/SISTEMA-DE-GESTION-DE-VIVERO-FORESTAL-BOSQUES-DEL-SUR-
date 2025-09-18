@@ -1,19 +1,30 @@
 // API client y utilidades compartidas (ES Modules)
 'use strict';
 
-// Backend API base para hosting compartido (misma cuenta/dominio):
-// Intenta derivar desde la ubicación actual (e.g., /frontend/html/login.html -> /backend/php/api/).
-// Si no coincide la estructura, usa fallback absoluto: origin + /backend/php/api
+// Backend API base - Configuración robusta para diferentes entornos
 export const API_BASE = (() => {
+  // Si estamos en desarrollo local, usar ruta relativa
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    return '../backend/php/api';
+  }
+  
+  // Para producción, detectar la estructura de directorios
   try {
-    const path = location.pathname.replace(/\\/g, '/');
-    const guessed = path.replace(/\/frontend\/html\/.*$/i, '/backend/php/api/');
-    if (guessed !== path) {
-      const norm = guessed.startsWith('/') ? guessed : ('/' + guessed);
-      return (location.origin + norm).replace(/\/$/, '');
+    const path = location.pathname;
+    // Si la ruta contiene 'frontend', construir ruta relativa al backend
+    if (path.includes('/frontend/')) {
+      // Contar los niveles de directorio para volver a la raíz
+      const depth = (path.match(/\//g) || []).length - 1;
+      const upPath = '../'.repeat(depth - 1) + 'backend/php/api';
+      return upPath;
     }
-  } catch (_) {}
-  return `${location.origin}/backend/php/api`;
+    
+    // Fallback: usar ruta relativa desde la raíz
+    return './backend/php/api';
+  } catch (_) {
+    // Último recurso: usar ruta relativa simple
+    return '../backend/php/api';
+  }
 })();
 
 export async function api(path, options = {}) {
