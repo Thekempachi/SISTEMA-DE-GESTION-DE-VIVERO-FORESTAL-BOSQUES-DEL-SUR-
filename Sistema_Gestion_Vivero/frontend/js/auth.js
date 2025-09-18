@@ -224,55 +224,68 @@ window.addEventListener('DOMContentLoaded', async () => {
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
 
+    // Limpiar mensajes anteriores
+    msg.textContent = '';
+    msg.className = 'login-msg muted';
+
     // Validación básica del frontend
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
 
     if (!username) {
-      msg.textContent = 'Por favor ingrese su usuario';
+      showMessage('Por favor ingrese su usuario', 'error');
       usernameInput.focus();
       return;
     }
 
     if (!password) {
-      msg.textContent = 'Por favor ingrese su contraseña';
+      showMessage('Por favor ingrese su contraseña', 'error');
       passwordInput.focus();
       return;
     }
 
-    msg.textContent = 'Ingresando...';
-    msg.style.color = 'black';
+    showMessage('Ingresando...', '');
 
     try {
       await login(username, password);
-      msg.textContent = '¡Bienvenido!';
-      msg.style.color = 'green';
+      showMessage('¡Bienvenido!', 'success');
+
       // Pequeña pausa para mostrar el mensaje de éxito
       setTimeout(() => {
         window.location.href = './index.html';
-      }, 500);
+      }, 800);
     } catch (e) {
       console.error('Error de login:', e);
-      msg.style.color = 'red';
 
       // Mensajes de error más amigables
-      if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
-        msg.textContent = 'Error de conexión. Verifique su conexión a internet.';
-      } else if (e.message.includes('401') || e.message.includes('No autenticado')) {
-        msg.textContent = 'Usuario o contraseña incorrectos';
-      } else if (e.message.includes('500')) {
-        msg.textContent = 'Error del servidor. Intente nuevamente más tarde.';
-      } else {
-        msg.textContent = e.message || 'Error desconocido. Intente nuevamente.';
-      }
+      let errorMessage = 'Error desconocido. Intente nuevamente.';
 
-      // Limpiar campos si fue error de credenciales
-      if (e.message.includes('Credenciales inválidas') || e.message.includes('401')) {
+      if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+        errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+      } else if (e.message.includes('401') || e.message.includes('No autenticado') || e.message.includes('Credenciales inválidas')) {
+        errorMessage = 'Usuario o contraseña incorrectos';
         passwordInput.value = '';
         passwordInput.focus();
+      } else if (e.message.includes('500')) {
+        errorMessage = 'Error del servidor. Intente nuevamente más tarde.';
+      } else if (e.message) {
+        errorMessage = e.message;
       }
+
+      showMessage(errorMessage, 'error');
     }
   });
+
+  function showMessage(text, type) {
+    msg.textContent = text;
+    msg.className = 'login-msg muted';
+
+    if (type === 'error') {
+      msg.classList.add('error');
+    } else if (type === 'success') {
+      msg.classList.add('success');
+    }
+  }
 
 
 });
