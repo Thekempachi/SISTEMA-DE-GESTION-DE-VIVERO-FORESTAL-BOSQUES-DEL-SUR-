@@ -93,47 +93,6 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const msgDiv = document.getElementById('login-msg');
-      
-      if (!username || !password) {
-        msgDiv.textContent = 'Complete todos los campos';
-        msgDiv.className = 'login-msg error';
-        return;
-      }
-      
-      try {
-        msgDiv.textContent = 'Iniciando sesión...';
-        msgDiv.className = 'login-msg';
-        
-        const response = await fetch('../../login_api.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-        
-        const data = await response.json();
-        
-        if (data.ok) {
-          msgDiv.textContent = '¡Login exitoso!';
-          msgDiv.className = 'login-msg success';
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 1000);
-        } else {
-          msgDiv.textContent = data.error || 'Error en el login';
-          msgDiv.className = 'login-msg error';
-        }
-      } catch (error) {
-        msgDiv.textContent = 'Error de conexión: ' + error.message;
-        msgDiv.className = 'login-msg error';
-      }
-    });
-  </script>
+  <script type="module" src="../js/auth.js"></script>
 </body>
 </html>

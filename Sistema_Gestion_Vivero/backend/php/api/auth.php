@@ -1,4 +1,3 @@
 <?php
-require_once __DIR__ . '/../controllers/AuthController.php';
-
-AuthController::handle();
+// Redireccionar a la API simple por ahora
+include __DIR__ . '/auth_simple.php';
