@@ -111,33 +111,38 @@ async function loadCatalogs(seed = false) {
   try {
     const data = await api(`catalogs.php${seed ? '?seed=1' : ''}`);
     state.catalogs = data.catalogs || {};
+    
+    console.log('Catálogos cargados:', state.catalogs);
+    
+    // Fill selects depending on catalogs (con valores por defecto si faltan)
+    const tipoEspecie = document.getElementById('tipo-especie');
+    if (tipoEspecie) {
+      console.log('Llenando tipo-especie con:', state.catalogs.tipo_especie || []);
+      fillSelect(tipoEspecie, state.catalogs.tipo_especie || []);
+    }
+    const ifFase = document.getElementById('if-fase');
+    if (ifFase) fillSelect(ifFase, state.catalogs.fases_produccion || []);
+    ['if-ubicacion','co-ubicacion','pl-ubicacion'].forEach(id => {
+      const el = document.getElementById(id); if (el) fillSelect(el, state.catalogs.ubicaciones || [], { label: 'sector' });
+    });
+    const plSalud = document.getElementById('pl-salud');
+    if (plSalud) fillSelect(plSalud, state.catalogs.estado_salud || []);
+    // Nuevos selects para planta: clasificación y tamaño
+    const plCal = document.getElementById('pl-calidad');
+    if (plCal) fillSelect(plCal, [{ id: '', nombre: '— sin asignar —' }, ...(state.catalogs.clasificaciones_calidad || [])]);
+    const plTam = document.getElementById('pl-tamano');
+    if (plTam) fillSelect(plTam, [{ id: '', codigo: '— sin asignar —' }, ...(state.catalogs.tamanos_plantas || [])], { label: 'codigo' });
+    const invCal = document.getElementById('inv-calidad');
+    if (invCal) fillSelect(invCal, state.catalogs.clasificaciones_calidad || []);
+    const invTam = document.getElementById('inv-tamano');
+    if (invTam) fillSelect(invTam, state.catalogs.tamanos_plantas || [], { label: 'codigo' });
+    const olEstado = document.getElementById('ol-estado');
+    if (olEstado) fillSelect(olEstado, state.catalogs.estado_salud || []);
+    const trTipo = document.getElementById('tr-tipo');
+    if (trTipo) fillSelect(trTipo, state.catalogs.tipos_tratamiento || []);
   } catch (error) {
     state.catalogs = {};
   }
-
-  // Fill selects depending on catalogs (con valores por defecto si faltan)
-  const tipoEspecie = document.getElementById('tipo-especie');
-  if (tipoEspecie) fillSelect(tipoEspecie, state.catalogs.tipo_especie || []);
-  const ifFase = document.getElementById('if-fase');
-  if (ifFase) fillSelect(ifFase, state.catalogs.fases_produccion || []);
-  ['if-ubicacion','co-ubicacion','pl-ubicacion'].forEach(id => {
-    const el = document.getElementById(id); if (el) fillSelect(el, state.catalogs.ubicaciones || [], { label: 'sector' });
-  });
-  const plSalud = document.getElementById('pl-salud');
-  if (plSalud) fillSelect(plSalud, state.catalogs.estado_salud || []);
-  // Nuevos selects para planta: clasificación y tamaño
-  const plCal = document.getElementById('pl-calidad');
-  if (plCal) fillSelect(plCal, [{ id: '', nombre: '— sin asignar —' }, ...(state.catalogs.clasificaciones_calidad || [])]);
-  const plTam = document.getElementById('pl-tamano');
-  if (plTam) fillSelect(plTam, [{ id: '', codigo: '— sin asignar —' }, ...(state.catalogs.tamanos_plantas || [])], { label: 'codigo' });
-  const invCal = document.getElementById('inv-calidad');
-  if (invCal) fillSelect(invCal, state.catalogs.clasificaciones_calidad || []);
-  const invTam = document.getElementById('inv-tamano');
-  if (invTam) fillSelect(invTam, state.catalogs.tamanos_plantas || [], { label: 'codigo' });
-  const olEstado = document.getElementById('ol-estado');
-  if (olEstado) fillSelect(olEstado, state.catalogs.estado_salud || []);
-  const trTipo = document.getElementById('tr-tipo');
-  if (trTipo) fillSelect(trTipo, state.catalogs.tipos_tratamiento || []);
 }
 
 async function listEspecies() {

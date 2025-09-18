@@ -16,12 +16,23 @@ try {
     if ($method === 'GET') {
         // Devolver catálogos básicos
         $catalogs = [
+            'tipo_especie' => [
+                ['id' => 1, 'nombre' => 'Árbol'],
+                ['id' => 2, 'nombre' => 'Arbusto'],
+                ['id' => 3, 'nombre' => 'Hierba']
+            ],
             'tipos_especie' => [
                 ['id' => 1, 'nombre' => 'Árbol'],
                 ['id' => 2, 'nombre' => 'Arbusto'],
                 ['id' => 3, 'nombre' => 'Hierba']
             ],
             'fases' => [
+                ['id' => 1, 'nombre' => 'Germinación'],
+                ['id' => 2, 'nombre' => 'Crecimiento'],
+                ['id' => 3, 'nombre' => 'Desarrollo'],
+                ['id' => 4, 'nombre' => 'Maduración']
+            ],
+            'fases_produccion' => [
                 ['id' => 1, 'nombre' => 'Germinación'],
                 ['id' => 2, 'nombre' => 'Crecimiento'],
                 ['id' => 3, 'nombre' => 'Desarrollo'],
@@ -39,7 +50,7 @@ try {
             ]
         ];
         
-        echo json_encode(['ok' => true, 'data' => $catalogs]);
+        echo json_encode(['ok' => true, 'data' => $catalogs, 'catalogs' => $catalogs]);
         
     } elseif ($method === 'POST' && isset($_GET['seed']) && $_GET['seed'] === '1') {
         // Inicializar catálogos (simulado)
