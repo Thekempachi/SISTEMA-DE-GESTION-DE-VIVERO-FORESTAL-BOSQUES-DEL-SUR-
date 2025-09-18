@@ -8,21 +8,20 @@ export const API_BASE = (() => {
     return '../backend/php/api';
   }
   
-  // Para producción, detectar la estructura de directorios
+  // Para producción, construir la ruta al backend de forma más robusta
   try {
     const path = location.pathname;
-    // Si la ruta contiene 'frontend', construir ruta relativa al backend
-    if (path.includes('/frontend/')) {
-      // Contar los niveles de directorio para volver a la raíz
-      const depth = (path.match(/\//g) || []).length - 1;
-      const upPath = '../'.repeat(depth - 1) + 'backend/php/api';
-      return upPath;
+    const frontendPathIndex = path.indexOf('/frontend/');
+    if (frontendPathIndex !== -1) {
+      // Construye la ruta al backend relativa a la raíz del sitio
+      const basePath = path.substring(0, frontendPathIndex);
+      return `${basePath}/backend/php/api`;
     }
     
-    // Fallback: usar ruta relativa desde la raíz
-    return './backend/php/api';
+    // Fallback si no se encuentra /frontend/
+    return '../backend/php/api';
   } catch (_) {
-    // Último recurso: usar ruta relativa simple
+    // Último recurso en caso de error
     return '../backend/php/api';
   }
 })();
