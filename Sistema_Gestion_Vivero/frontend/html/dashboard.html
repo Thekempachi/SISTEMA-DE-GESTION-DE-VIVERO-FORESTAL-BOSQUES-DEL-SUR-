@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Vivero Bosques del Sur</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f0f9f4; 
+      margin: 0; 
+      padding: 20px; 
+    }
+    .container { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      background: white; 
+      padding: 30px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+    }
+    h1 { color: #184d47; text-align: center; margin-bottom: 30px; }
+    .welcome { 
+      background: #e8f5e8; 
+      padding: 20px; 
+      border-radius: 8px; 
+      margin-bottom: 30px; 
+      text-align: center; 
+    }
+    .logout-btn { 
+      background: #dc2626; 
+      color: white; 
+      padding: 10px 20px; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      float: right; 
+    }
+    .logout-btn:hover { background: #b91c1c; }
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+      gap: 20px; 
+      margin-top: 30px; 
+    }
+    .card { 
+      background: #f8fafc; 
+      padding: 20px; 
+      border-radius: 8px; 
+      border: 1px solid #e2e8f0; 
+    }
+    .card h3 { color: #184d47; margin-top: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    <h1>🌱 Dashboard - Vivero "Bosques del Sur"</h1>
+    
+    <div class="welcome">
+      <h2>¡Bienvenido al Sistema de Gestión!</h2>
+      <p id="user-welcome">Usuario logueado correctamente</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>📊 Resumen del Sistema</h3>
+        <p>Sistema funcionando correctamente</p>
+        <ul>
+          <li>✅ Autenticación activa</li>
+          <li>✅ Base de datos conectada</li>
+          <li>✅ Interfaz cargada</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>🌿 Gestión de Especies</h3>
+        <p>Administra las especies del vivero</p>
+        <button onclick="alert('Funcionalidad en desarrollo')">Gestionar Especies</button>
+      </div>
+
+      <div class="card">
+        <h3>📦 Inventario</h3>
+        <p>Control de stock y plantas</p>
+        <button onclick="alert('Funcionalidad en desarrollo')">Ver Inventario</button>
+      </div>
+
+      <div class="card">
+        <h3>📈 Reportes</h3>
+        <p>Genera reportes del vivero</p>
+        <button onclick="alert('Funcionalidad en desarrollo')">Ver Reportes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Verificar si hay sesión activa
+    function checkSession() {
+      // Por ahora solo mostrar que está logueado
+      const userWelcome = document.getElementById('user-welcome');
+      userWelcome.textContent = 'Sesión activa - Sistema funcionando';
+    }
+
+    function logout() {
+      if (confirm('¿Está seguro que desea cerrar sesión?')) {
+        // Limpiar cualquier dato de sesión local
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Redirigir al login
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Verificar sesión al cargar
+    checkSession();
+  </script>
+</body>
+</html>

@@ -111,7 +111,7 @@
         msgDiv.textContent = 'Iniciando sesión...';
         msgDiv.className = 'login-msg';
         
-        const response = await fetch('/backend/php/api/auth.php?action=login', {
+        const response = await fetch('../../login_api.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
@@ -123,7 +123,7 @@
           msgDiv.textContent = '¡Login exitoso!';
           msgDiv.className = 'login-msg success';
           setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = 'dashboard.html';
           }, 1000);
         } else {
           msgDiv.textContent = data.error || 'Error en el login';
