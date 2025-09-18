@@ -593,18 +593,87 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.error('Error binding forms:', bindError);
   }
 
-  // Logout button
+  // Logout button - Implementación profesional mejorada
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await api('auth.php?action=logout', { method: 'POST' });
-      } catch (error) {
-        console.error('Logout failed', error);
-        // Still redirect even if API fails, as session might be gone
-      } finally {
-        window.location.href = './login.html';
-      }
+    // Importar la función handleLogout de auth.js
+    import('./auth.js').then(({ handleLogout }) => {
+      logoutBtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        console.debug('Logout button clicked by user');
+        
+        // Obtener información del usuario para mensaje personalizado
+        const userNameElement = document.getElementById('user-name');
+        const userName = userNameElement?.textContent || 'usuario';
+        
+        // Confirmación profesional con mensaje personalizado
+        const confirmLogout = confirm(
+          `¿Estás seguro de que deseas cerrar la sesión de ${userName}?\n\n` +
+          'Se cerrará tu sesión actual y serás redirigido a la página de inicio.'
+        );
+        
+        if (confirmLogout) {
+          try {
+            console.debug(`Usuario ${userName} confirmó logout. Iniciando proceso...`);
+            await handleLogout(logoutBtn);
+          } catch (error) {
+            console.error('Error inesperado en logout:', error);
+            
+            // Mostrar feedback de error al usuario
+            const iconElement = logoutBtn.querySelector('.logout-icon');
+            const textElement = logoutBtn.querySelector('.logout-text');
+            
+            if (iconElement) iconElement.textContent = '❌';
+            if (textElement) textElement.textContent = 'Error';
+            
+            logoutBtn.classList.add('error');
+            
+            // Esperar un momento y redirigir igualmente por seguridad
+            setTimeout(() => {
+              console.warn('Redirigiendo por seguridad después de error crítico');
+              window.location.href = './login.html';
+            }, 1000);
+          }
+        } else {
+          console.debug('Usuario canceló el logout');
+          // Devolver el foco al botón si el usuario canceló
+          logoutBtn.focus();
+        }
+      });
+      
+      // Añadir soporte para teclado (Escape key para cancelar)
+      logoutBtn.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          console.debug('Escape key pressed - canceling logout focus');
+          logoutBtn.blur();
+        }
+      });
+      
+      console.debug('Logout button event listener attached successfully');
+    }).catch(error => {
+      console.error('Error importing auth module:', error);
+      
+      // Fallback robusto: usar implementación básica si falla la importación
+      logoutBtn.addEventListener('click', () => {
+        const confirmLogout = confirm(
+          '¿Estás seguro de que deseas cerrar la sesión?\n\n' +
+          'Ocurrió un error al cargar el sistema de logout seguro. ' +
+          'Serás redirigido a la página de inicio.'
+        );
+        
+        if (confirmLogout) {
+          window.location.href = './login.html';
+        }
+      });
     });
+  } else {
+    console.error('Critical: Logout button (#logout-btn) not found on the page.');
+    
+    // Fallback de emergencia: intentar redirigir automáticamente después de un tiempo
+    setTimeout(() => {
+      if (!document.getElementById('logout-btn')) {
+        console.warn('Logout button still not found - possible UI corruption');
+      }
+    }, 5000);
   }
 });

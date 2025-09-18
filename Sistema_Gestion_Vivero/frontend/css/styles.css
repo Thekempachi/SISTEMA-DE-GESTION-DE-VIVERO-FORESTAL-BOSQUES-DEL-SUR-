@@ -388,11 +388,103 @@ header {
   font-weight: bold;
 }
 
+/* Contenedor de acciones de usuario */
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botón de logout profesional */
 .btn-logout {
-  background-color: #c82333;
-  border-color: #c82333;
-  padding: 6px 12px;
-  font-size: 14px;
+  background: linear-gradient(135deg, var(--primary) 0%, #2d5a4f 100%);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-logout:hover {
+  background: linear-gradient(135deg, #2d5a4f 0%, #1a3d36 100%);
+  border-color: #1a3d36;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-logout:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-logout:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-logout:disabled {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  border-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+/* Icono de logout */
+.logout-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.btn-logout:hover .logout-icon {
+  transform: rotate(15deg);
+}
+
+/* Texto de logout */
+.logout-text {
+  font-weight: 500;
+  letter-spacing: 0.025em;
+}
+
+/* Efecto de carga */
+.btn-logout.loading .logout-icon::before {
+  content: '⏳';
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Estados adicionales */
+.btn-logout.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #10b981;
+}
+
+.btn-logout.error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: #ef4444;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
 .btn-back-login {
