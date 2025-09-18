@@ -3,6 +3,76 @@ import { API_BASE, api } from './api.js';
 // Exportar funciones para uso en otros módulos
 export { login, me, logout, handleLogout };
 
+// Inicializar funcionalidad del login cuando se carga el DOM
+document.addEventListener('DOMContentLoaded', function() {
+  initializePasswordToggle();
+  initializeLoginForm();
+});
+
+// Funcionalidad para mostrar/ocultar contraseña
+function initializePasswordToggle() {
+  const toggleButton = document.getElementById('toggle-password');
+  const passwordInput = document.getElementById('password');
+  const toggleIcon = document.querySelector('.password-toggle-icon');
+  
+  if (toggleButton && passwordInput && toggleIcon) {
+    toggleButton.addEventListener('click', function() {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      toggleIcon.textContent = isPassword ? '🙈' : '👁️';
+      toggleButton.setAttribute('aria-label', 
+        isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+      );
+    });
+  }
+}
+
+// Inicializar formulario de login
+function initializeLoginForm() {
+  const loginForm = document.getElementById('login-form');
+  const loginMsg = document.getElementById('login-msg');
+  
+  if (loginForm && loginMsg) {
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      
+      if (!username || !password) {
+        showLoginMessage('Por favor, complete todos los campos', 'error');
+        return;
+      }
+      
+      try {
+        showLoginMessage('Iniciando sesión...', '');
+        const result = await login(username, password);
+        
+        if (result.ok) {
+          showLoginMessage('¡Login exitoso! Redirigiendo...', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1000);
+        } else {
+          showLoginMessage(result.error || 'Error en el login', 'error');
+        }
+      } catch (error) {
+        showLoginMessage(error.message || 'Error de conexión', 'error');
+      }
+    });
+  }
+}
+
+// Mostrar mensajes de login
+function showLoginMessage(message, type) {
+  const loginMsg = document.getElementById('login-msg');
+  if (loginMsg) {
+    loginMsg.textContent = message;
+    loginMsg.className = `login-msg ${type}`;
+    loginMsg.style.display = message ? 'block' : 'none';
+  }
+}
+
 async function login(username, password) {
   try {
 

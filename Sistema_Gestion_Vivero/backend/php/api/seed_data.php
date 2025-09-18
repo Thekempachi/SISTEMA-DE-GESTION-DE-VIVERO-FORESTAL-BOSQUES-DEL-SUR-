@@ -14,12 +14,18 @@ try {
         (4, 'Usuario', 'Usuario básico')");
     echo "✅ Roles insertados\n";
     
-    // Insertar usuarios con contraseñas en texto plano para migración
-    $pdo->exec("INSERT IGNORE INTO usuarios (id, username, password_hash, nombre, rol_id, email) VALUES
-        (1, 'admin', 'hash_admin', 'Administrador', 1, 'admin@vivero.com'),
-        (2, 'tecnico1', 'hash_tecnico', 'Técnico 1', 2, 'tecnico1@vivero.com'),
-        (3, 'logi1', 'hash_logi', 'Logística 1', 3, 'logi1@vivero.com'),
-        (4, 'user1', 'hash_user', 'Usuario 1', 4, 'user1@vivero.com')");
+    // Insertar usuarios con contraseñas hasheadas correctamente
+    $adminHash = password_hash('admin', PASSWORD_DEFAULT);
+    $tecnicoHash = password_hash('tecnico', PASSWORD_DEFAULT);
+    $logisticaHash = password_hash('logistica', PASSWORD_DEFAULT);
+    $userHash = password_hash('user', PASSWORD_DEFAULT);
+    
+    $stmt = $pdo->prepare("INSERT IGNORE INTO usuarios (id, username, password_hash, nombre, rol_id, email) VALUES
+        (1, 'admin', ?, 'Administrador', 1, 'admin@vivero.com'),
+        (2, 'tecnico1', ?, 'Técnico 1', 2, 'tecnico1@vivero.com'),
+        (3, 'logistica', ?, 'Logística 1', 3, 'logistica@vivero.com'),
+        (4, 'user1', ?, 'Usuario 1', 4, 'user1@vivero.com')");
+    $stmt->execute([$adminHash, $tecnicoHash, $logisticaHash, $userHash]);
     echo "✅ Usuarios insertados\n";
     
     // Insertar catálogos
