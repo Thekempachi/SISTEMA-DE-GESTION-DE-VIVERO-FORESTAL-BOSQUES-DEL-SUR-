@@ -230,6 +230,46 @@ Si tienes usuarios con contraseñas en texto plano:
    - Los usuarios inician sesión con su contraseña actual (texto plano)
    - El sistema la migra a hash seguro en el primer login exitoso
 
+## Diseño Responsivo y Funcionalidades de Usuario
+
+### Diseño Totalmente Responsivo
+
+El sistema ha sido optimizado para funcionar perfectamente en todos los dispositivos y tamaños de pantalla:
+
+- **Dispositivos móviles (320px - 480px):** Diseño optimizado para smartphones pequeños con navegación vertical y formularios adaptados
+- **Tablets (481px - 768px):** Interfaz equilibrada para tablets medianas y pequeñas
+- **Laptops y tablets grandes (769px - 1024px):** Diseño adaptado para pantallas más grandes
+- **Escritorio (1025px+):** Experiencia completa con todas las funcionalidades visibles
+- **Orientación horizontal:** Manejo específico para dispositivos móviles en modo landscape
+- **Modo impresión:** Estilos optimizados para imprimir informes y datos
+
+### Características del Diseño Responsivo:
+
+- **Header adaptativo:** Se reorganiza de horizontal (escritorio) a vertical (móvil)
+- **Navegación flexible:** Los botones se ajustan y envuelven según el espacio disponible
+- **Grid layouts:** Las cuadrículas se adaptan de 4 columnas (escritorio) a 1 columna (móvil)
+- **Formularios optimizados:** Los campos se reorganizan en una sola columna en dispositivos móviles
+- **Tablas responsivas:** Con scroll horizontal en dispositivos pequeños y texto truncado con elipsis
+- **Tipografía escalable:** Los tamaños de fuente se ajustan según el dispositivo
+- **KPIs y tarjetas:** Se redimensionan y reorganizan para mantener la legibilidad
+
+### Funcionalidad "Volver al Login"
+
+Se ha implementado un sistema de navegación mejorado con acceso rápido a la página de login:
+
+- **Botón en el header:** Acceso conveniente en la esquina superior derecha junto al botón de cerrar sesión
+- **Botón en el footer:** Acceso prominente en la parte inferior de la página ("al todo del final")
+- **Estilo consistente:** Ambos botones utilizan la clase `.btn-back-login` con diseño gris y hover effects
+- **Totalmente responsivo:** El botón del footer se adapta a ancho completo en dispositivos móviles
+- **Accesible:** Enlaces claros y visibles desde cualquier sección de la aplicación
+
+### Mejoras Técnicas Recientes:
+
+- **Eliminación de CSS inline:** Todo el estilo se ha movido al archivo `styles.css` externo
+- **Nuevas clases CSS:** `.header-container`, `.header-title`, `.user-info`, `.btn-back-login`, `.footer-content`
+- **Optimizaciones de rendimiento:** Comentarios para propiedades CSS experimentales
+- **Compatibilidad mejorada:** Soporte para navegadores modernos con fallbacks apropiados
+
 ### Notas finales
 
 - **Desactiva `APP_DEBUG` en producción**

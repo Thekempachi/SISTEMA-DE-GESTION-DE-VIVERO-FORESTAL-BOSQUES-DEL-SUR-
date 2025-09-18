@@ -38,6 +38,10 @@ Este documento describe la arquitectura en capas del proyecto y su organización
   - Estilos unificados sin inline, con utilidades (`.center-screen`, `.w-420`, `.p-20`, `.rounded-12`, `.mt-8`, `.mt-12`, `.w-full`, `.kpi-number`, etc.).
   - Estructura por secciones (Variables/Reset, Base, Componentes, Formularios, Tablas, Utilidades) y mejoras de a11y (`:focus-visible`).
   - Tema oscuro opcional: `body.theme-dark` redefine variables.
+  - **Diseño totalmente responsivo** con 6 breakpoints: móviles (320px-480px), tablets (481px-768px), laptops (769px-1024px), escritorio (1025px+), landscape y modo impresión.
+  - **Nuevas clases CSS**: `.header-container`, `.header-title`, `.user-info`, `.btn-back-login`, `.footer-content` para mejor organización y mantenibilidad.
+  - **Componentes adaptativos**: Header (horizontal↔vertical), navegación flexible, grid layouts (4↔1 columnas), formularios optimizados y tablas responsivas.
+  - **Funcionalidad "Volver al Login"**: Implementada con botones en header y footer para mejor navegación y accesibilidad.
 
 ## Flujo de Peticiones
 
@@ -91,6 +95,10 @@ Sistema_Gestion_Vivero/
 - Dashboard real (KPIs, resumen de inventario, últimos lotes).
 - Reglas por rol aplicadas en controladores (POST/PUT roles 1-2; DELETE solo rol 1).
 - Endpoints existentes mantienen rutas y formatos de respuesta.
+- **Diseño totalmente responsivo** implementado con 6 breakpoints para todos los dispositivos.
+- **Nueva arquitectura CSS** con clases semánticas para mejor mantenibilidad.
+- **Funcionalidad "Volver al Login"** con botones en header y footer para mejor UX.
+- **Optimizaciones de rendimiento** y compatibilidad con comentarios para propiedades experimentales.
 
 ## Recomendaciones de seguridad
 - `backend/php/conection.php` soporta variables de entorno `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`. Configure el hosting para no hardcodear credenciales en el repo.
@@ -132,6 +140,9 @@ Siguientes candidatos:
 - Separar `api.js` y utilidades.
 - Dividir `script.js` por páginas/secciones.
 - Añadir manejo de errores y spinners reutilizables.
+- **Completado**: Implementación de diseño totalmente responsivo con 6 breakpoints.
+- **Completado**: Optimización de arquitectura CSS con clases semánticas.
+- **Completado**: Mejora de UX con funcionalidad "Volver al Login" dual (header + footer).
 
 ---
 Esta arquitectura facilita mantener y escalar el sistema sin cambiar URLs existentes, minimizando riesgos de regresión mientras se mejora la organización del código.
