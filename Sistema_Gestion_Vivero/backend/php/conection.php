@@ -34,15 +34,33 @@ define('DB_PASS', getenv('DB_PASS') ?: 'C0ntrsen@102');
 function db(): PDO {
     static $pdo = null;
     if ($pdo === null) {
-        $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4';
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ];
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-        // Ensure utf8mb4 for the session
-        $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+        try {
+            $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4';
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_TIMEOUT => 30,
+            ];
+            
+            // Log de debug si está habilitado
+            if (getenv('APP_DEBUG') === '1') {
+                error_log("Intentando conectar a DB: host=" . DB_HOST . ", db=" . DB_NAME . ", user=" . DB_USER);
+            }
+            
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            // Ensure utf8mb4 for the session
+            $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+            
+            if (getenv('APP_DEBUG') === '1') {
+                error_log("Conexión a DB exitosa");
+            }
+        } catch (PDOException $e) {
+            if (getenv('APP_DEBUG') === '1') {
+                error_log("Error de conexión DB: " . $e->getMessage());
+            }
+            throw $e;
+        }
     }
     return $pdo;
 }
@@ -75,40 +93,29 @@ function require_fields(array $data, array $fields): void {
 // ---- Session & Auth helpers ----
 function ensure_session_started(): void {
     if (session_status() === PHP_SESSION_NONE) {
-        // Secure session cookie flags when possible
-        $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
-        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $forwardedProto === 'https';
+        // Configuración simplificada de sesión para mejor compatibilidad
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 
-        $originHost = parse_url($_SERVER['HTTP_ORIGIN'] ?? '', PHP_URL_HOST) ?: '';
-        $serverHost = $_SERVER['HTTP_HOST'] ?? '';
-        $isCrossSite = ($originHost && strcasecmp($originHost, $serverHost) !== 0);
+        // Configuración básica de cookies de sesión
+        session_set_cookie_params(0, '/', '', $secure, true);
 
-        // En cross-site, los navegadores requieren SameSite=None y Secure=true para enviar cookies
-        $sameSite = $isCrossSite ? 'None' : 'Lax';
-        if ($isCrossSite) { $secure = true; }
-
+        // Configuración adicional para SameSite (PHP 7.3+)
         if (defined('PHP_VERSION_ID') && PHP_VERSION_ID >= 70300) {
-            // PHP 7.3+ soporta el array con 'samesite'
             session_set_cookie_params([
                 'lifetime' => 0,
                 'path' => '/',
                 'domain' => '',
                 'secure' => $secure,
                 'httponly' => true,
-                'samesite' => $sameSite,
+                'samesite' => 'Lax',
             ]);
         } else {
-            // Fallback PHP < 7.3: usar forma antigua e incluir SameSite en path
-            $path = '/';
-            // Algunos servidores aceptan agregar "; samesite=..." en el path
-            $pathWithSameSite = $path . '; samesite=' . strtolower($sameSite);
-            // domain vacío para default host
-            session_set_cookie_params(0, $pathWithSameSite, '', $secure, true);
-            // Intentar también mediante ini para mayor compatibilidad
-            @ini_set('session.cookie_samesite', $sameSite);
+            // Fallback para versiones anteriores
+            @ini_set('session.cookie_samesite', 'Lax');
             @ini_set('session.cookie_secure', $secure ? '1' : '0');
             @ini_set('session.cookie_httponly', '1');
         }
+
         session_start();
     }
 }

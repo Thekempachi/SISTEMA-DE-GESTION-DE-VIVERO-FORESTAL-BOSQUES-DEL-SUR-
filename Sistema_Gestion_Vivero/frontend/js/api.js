@@ -7,21 +7,44 @@ export const API_BASE = (() => {
   if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
     return '../backend/php/api';
   }
-  
+
   // Para producción, construir la ruta al backend de forma más robusta
   try {
     const path = location.pathname;
-    const frontendPathIndex = path.indexOf('/frontend/');
-    if (frontendPathIndex !== -1) {
-      // Construye la ruta al backend relativa a la raíz del sitio
-      const basePath = path.substring(0, frontendPathIndex);
-      return `${basePath}/backend/php/api`;
+    console.debug('Current path:', path);
+
+    // Buscar diferentes patrones de ruta
+    const patterns = [
+      '/Sistema_Gestion_Vivero/frontend/',
+      '/SISTEMA-DE-GESTI-N-DE-VIVERO-FORESTAL-BOSQUES-DEL-SUR-/Sistema_Gestion_Vivero/frontend/',
+      '/Sistema_Gestion_Vivero/frontend/',
+      '/frontend/'
+    ];
+
+    for (const pattern of patterns) {
+      const index = path.indexOf(pattern);
+      if (index !== -1) {
+        const basePath = path.substring(0, index);
+        const backendPath = `${basePath}/Sistema_Gestion_Vivero/backend/php/api`;
+        console.debug('Using backend path:', backendPath);
+        return backendPath;
+      }
     }
-    
-    // Fallback si no se encuentra /frontend/
+
+    // Fallback: intentar construir ruta basada en la estructura conocida
+    if (path.includes('Sistema_Gestion_Vivero')) {
+      const parts = path.split('/');
+      const projectIndex = parts.findIndex(part => part.includes('Sistema_Gestion_Vivero') || part.includes('SISTEMA-DE-GESTI'));
+      if (projectIndex !== -1) {
+        const basePath = parts.slice(0, projectIndex + 1).join('/');
+        return `${basePath}/Sistema_Gestion_Vivero/backend/php/api`;
+      }
+    }
+
+    // Último fallback - ruta relativa simple
     return '../backend/php/api';
-  } catch (_) {
-    // Último recurso en caso de error
+  } catch (error) {
+    console.error('Error constructing API_BASE:', error);
     return '../backend/php/api';
   }
 })();

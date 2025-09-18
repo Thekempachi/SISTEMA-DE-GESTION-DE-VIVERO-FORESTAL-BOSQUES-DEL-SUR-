@@ -108,9 +108,16 @@ async function ensureAuth() {
 }
 
 async function loadCatalogs(seed = false) {
-  const data = await api(`catalogs.php${seed ? '?seed=1' : ''}`);
-  state.catalogs = data.catalogs || {};
-  // Fill selects depending on catalogs
+  try {
+    const data = await api(`catalogs.php${seed ? '?seed=1' : ''}`);
+    state.catalogs = data.catalogs || {};
+    console.log('Catálogos cargados:', Object.keys(state.catalogs));
+  } catch (error) {
+    console.warn('Error cargando catálogos, usando valores por defecto:', error.message);
+    state.catalogs = {};
+  }
+
+  // Fill selects depending on catalogs (con valores por defecto si faltan)
   const tipoEspecie = document.getElementById('tipo-especie');
   if (tipoEspecie) fillSelect(tipoEspecie, state.catalogs.tipo_especie || []);
   const ifFase = document.getElementById('if-fase');

@@ -81,8 +81,14 @@ class CatalogRepository {
     public function getCatalogs(array $tables): array {
         $catalogs = [];
         foreach ($tables as $t) {
-            $stmt = $this->pdo->query("SELECT * FROM $t ORDER BY 1");
-            $catalogs[$t] = $stmt->fetchAll();
+            try {
+                $stmt = $this->pdo->query("SELECT * FROM $t ORDER BY 1");
+                $catalogs[$t] = $stmt->fetchAll();
+            } catch (PDOException $e) {
+                // Si la tabla no existe, devolver array vacío en lugar de fallar
+                error_log("Tabla $t no existe, devolviendo array vacío: " . $e->getMessage());
+                $catalogs[$t] = [];
+            }
         }
         return $catalogs;
     }

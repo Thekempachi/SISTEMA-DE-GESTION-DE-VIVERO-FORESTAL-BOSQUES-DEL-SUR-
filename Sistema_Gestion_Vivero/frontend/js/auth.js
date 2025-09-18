@@ -5,29 +5,51 @@ export { login, me, logout, handleLogout };
 
 async function login(username, password) {
   try {
-    console.debug('Intentando login con:', { username });
+    console.debug('Intentando login con:', { username, apiBase: API_BASE });
+
     const res = await fetch(`${API_BASE}/auth.php?action=login`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    
-    const data = await res.json().catch(() => ({ error: 'Error de respuesta del servidor' }));
-    
+
+    console.debug('Respuesta del servidor:', { status: res.status, ok: res.ok });
+
+    let data;
+    try {
+      data = await res.json();
+      console.debug('Datos de respuesta:', data);
+    } catch (jsonError) {
+      console.error('Error parseando JSON:', jsonError);
+      throw new Error('Respuesta inválida del servidor');
+    }
+
     if (!res.ok) {
-      throw new Error(data.error || `Error ${res.status}`);
+      const errorMsg = data.error || `Error HTTP ${res.status}`;
+      console.error('Error HTTP:', errorMsg);
+      throw new Error(errorMsg);
     }
-    
+
     if (!data.ok) {
-      throw new Error(data.error || 'Error en el login');
+      const errorMsg = data.error || 'Error en el login';
+      console.error('Error de aplicación:', errorMsg);
+      throw new Error(errorMsg);
     }
-    
+
     console.debug('Login exitoso para:', username);
     return data;
   } catch (e) {
-    console.debug('Error en login():', e.message);
-    throw e;
+    console.error('Error en login():', e);
+
+    // Re-throw con mensaje más específico
+    if (e.message.includes('Failed to fetch')) {
+      throw new Error('No se pudo conectar al servidor. Verifique su conexión.');
+    } else if (e.message.includes('NetworkError')) {
+      throw new Error('Error de red. Verifique su conexión a internet.');
+    } else {
+      throw e;
+    }
   }
 }
 
@@ -203,17 +225,59 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
   const form = document.getElementById('login-form');
   const msg = document.getElementById('login-msg');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
+
+    // Validación básica del frontend
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username) {
+      msg.textContent = 'Por favor ingrese su usuario';
+      usernameInput.focus();
+      return;
+    }
+
+    if (!password) {
+      msg.textContent = 'Por favor ingrese su contraseña';
+      passwordInput.focus();
+      return;
+    }
+
     msg.textContent = 'Ingresando...';
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+    msg.style.color = 'black';
+
     try {
       await login(username, password);
-      msg.textContent = 'OK';
-      window.location.href = './index.html';
+      msg.textContent = '¡Bienvenido!';
+      msg.style.color = 'green';
+      // Pequeña pausa para mostrar el mensaje de éxito
+      setTimeout(() => {
+        window.location.href = './index.html';
+      }, 500);
     } catch (e) {
-      msg.textContent = e.message;
+      console.error('Error de login:', e);
+      msg.style.color = 'red';
+
+      // Mensajes de error más amigables
+      if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+        msg.textContent = 'Error de conexión. Verifique su conexión a internet.';
+      } else if (e.message.includes('401') || e.message.includes('No autenticado')) {
+        msg.textContent = 'Usuario o contraseña incorrectos';
+      } else if (e.message.includes('500')) {
+        msg.textContent = 'Error del servidor. Intente nuevamente más tarde.';
+      } else {
+        msg.textContent = e.message || 'Error desconocido. Intente nuevamente.';
+      }
+
+      // Limpiar campos si fue error de credenciales
+      if (e.message.includes('Credenciales inválidas') || e.message.includes('401')) {
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
     }
   });
 
