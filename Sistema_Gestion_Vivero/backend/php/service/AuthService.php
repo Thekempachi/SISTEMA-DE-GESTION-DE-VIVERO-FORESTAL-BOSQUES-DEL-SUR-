@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/UserRepository.php';
+require_once __DIR__ . '/../repository/UserRepository.php';
 
 class AuthService {
     private UserRepository $users;

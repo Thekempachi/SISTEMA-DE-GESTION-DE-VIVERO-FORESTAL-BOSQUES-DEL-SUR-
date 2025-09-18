@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/CatalogRepository.php';
+require_once __DIR__ . '/../repository/CatalogRepository.php';
 
 class CatalogService {
     private CatalogRepository $repo;

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/CondicionRepository.php';
+require_once __DIR__ . '/../repository/CondicionRepository.php';
 
 class CondicionService {
     private CondicionRepository $repo;
