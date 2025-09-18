@@ -4,97 +4,136 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ingresar - Vivero Bosques del Sur</title>
-  <link rel="stylesheet" href="../css/styles.css" />
-  <script type="module" src="../js/auth.js"></script>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f0f9f4; 
+      margin: 0; 
+      padding: 20px; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+    }
+    .login-card { 
+      background: white; 
+      padding: 40px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+      width: 100%; 
+      max-width: 400px; 
+    }
+    h1 { color: #184d47; text-align: center; margin-bottom: 30px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+    input { 
+      width: 100%; 
+      padding: 12px; 
+      border: 2px solid #e2e8f0; 
+      border-radius: 8px; 
+      font-size: 16px; 
+      box-sizing: border-box; 
+    }
+    input:focus { border-color: #184d47; outline: none; }
+    button { 
+      width: 100%; 
+      background: #184d47; 
+      color: white; 
+      padding: 14px; 
+      border: none; 
+      border-radius: 8px; 
+      font-size: 16px; 
+      cursor: pointer; 
+      margin-top: 10px; 
+    }
+    button:hover { background: #15803d; }
+    .login-msg { 
+      margin-top: 15px; 
+      padding: 10px; 
+      border-radius: 8px; 
+      text-align: center; 
+      display: none; 
+    }
+    .login-msg.error { background: #fee; color: #c00; border: 1px solid #fcc; display: block; }
+    .login-msg.success { background: #efe; color: #060; border: 1px solid #cfc; display: block; }
+    .help { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+    .help h3 { margin-top: 0; color: #184d47; }
+    .help ul { margin: 10px 0; }
+    .help li { margin-bottom: 5px; }
+    code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; }
+  </style>
 </head>
 <body>
-  <!-- Div de la imagen de fondo del vivero -->
-  <div class="background-image">
-    <div class="background-overlay"></div>
-  </div>
-
-  <!-- Div del formulario centrado sobre la imagen -->
-  <div class="login-overlay">
-    <div class="login-container">
-      <div class="login-card">
-        <div class="login-header">
-          <h1>Vivero "Bosques del Sur"</h1>
-          <p class="muted">Inicia sesión para continuar</p>
-        </div>
-
-        <form id="login-form" autocomplete="off" class="login-form">
-          <div class="form-group">
-            <label for="username">👤 Usuario</label>
-            <input id="username" name="username" placeholder="Tu usuario" autocomplete="off" />
-          </div>
-
-          <div class="form-group">
-            <label for="password">🔒 Contraseña</label>
-            <div class="password-input-container">
-              <input id="password" name="password" type="password" placeholder="Tu contraseña" autocomplete="new-password" />
-              <button type="button" id="toggle-password" class="password-toggle" title="Mostrar/ocultar contraseña" aria-label="Alternar visibilidad de contraseña">
-                <span class="password-toggle-icon">👁️</span>
-              </button>
-            </div>
-          </div>
-
-          <button type="submit" class="login-btn">Ingresar</button>
-          <div id="login-msg" class="login-msg muted"></div>
-        </form>
-
-        <div class="login-help">
-          <details class="help-details">
-            <summary class="help-toggle">ℹ️ Información de acceso</summary>
-            <div class="help-content">
-              <p><strong>👥 Usuarios por defecto:</strong></p>
-              <ul class="user-credentials">
-                <li>
-                  <code>admin</code> / <code>admin</code> 
-                  <span class="role-badge admin">Administrador</span>
-                </li>
-                <li>
-                  <code>tecnico1</code> / <code>tecnico</code> 
-                  <span class="role-badge tecnico">Técnico</span>
-                </li>
-                <li>
-                  <code>logistica</code> / <code>logistica</code> 
-                  <span class="role-badge logistica">Logística</span>
-                </li>
-                <li>
-                  <code>user1</code> / <code>user</code> 
-                  <span class="role-badge user">Usuario</span>
-                </li>
-              </ul>
-              <p><strong>🚨 Acceso de emergencia:</strong></p>
-              <ul class="user-credentials">
-                <li>
-                  <code>cualquier_usuario</code> / <code>emergencia123</code> 
-                  <span class="role-badge emergency">Emergencia</span>
-                </li>
-              </ul>
-              <p><strong>¿Problemas de conexión?</strong></p>
-              <ul>
-                <li>Verifique que el servidor web esté ejecutándose</li>
-                <li>Confirme que la base de datos esté configurada</li>
-                <li>Revise la consola del navegador (F12) para errores</li>
-              </ul>
-              <p><strong>🔧 Solución de problemas:</strong></p>
-              <ol>
-                <li>Ejecutar diagnóstico: <code>php diagnose.php</code></li>
-                <li>Corregir contraseñas: <code>php fix_passwords.php</code></li>
-                <li>Reinstalar datos: <code>php seed_data.php</code></li>
-              </ol>
-              <p><strong>🆕 Primer uso:</strong></p>
-              <ol>
-                <li><code>setup_tables.sql</code></li>
-                <li><code>install_tables.php</code></li>
-                <li><code>seed_data.php</code></li>
-              </ol>
-            </div>
-          </details>
-        </div>
+  <div class="login-card">
+    <h1>Vivero "Bosques del Sur"</h1>
+    
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <input id="username" name="username" type="text" required />
       </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input id="password" name="password" type="password" required />
+      </div>
+
+      <button type="submit">Ingresar</button>
+      <div id="login-msg" class="login-msg"></div>
+    </form>
+
+    <div class="help">
+      <h3>Credenciales por defecto:</h3>
+      <ul>
+        <li><code>admin</code> / <code>admin</code></li>
+        <li><code>tecnico1</code> / <code>tecnico</code></li>
+        <li><code>logistica</code> / <code>logistica</code></li>
+      </ul>
+      <p><strong>Emergencia:</strong> cualquier usuario / <code>emergencia123</code></p>
     </div>
   </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const msgDiv = document.getElementById('login-msg');
+      
+      if (!username || !password) {
+        msgDiv.textContent = 'Complete todos los campos';
+        msgDiv.className = 'login-msg error';
+        return;
+      }
+      
+      try {
+        msgDiv.textContent = 'Iniciando sesión...';
+        msgDiv.className = 'login-msg';
+        
+        const response = await fetch('/backend/php/api/auth.php?action=login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.ok) {
+          msgDiv.textContent = '¡Login exitoso!';
+          msgDiv.className = 'login-msg success';
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1000);
+        } else {
+          msgDiv.textContent = data.error || 'Error en el login';
+          msgDiv.className = 'login-msg error';
+        }
+      } catch (error) {
+        msgDiv.textContent = 'Error de conexión: ' + error.message;
+        msgDiv.className = 'login-msg error';
+      }
+    });
+  </script>
 </body>
 </html>
