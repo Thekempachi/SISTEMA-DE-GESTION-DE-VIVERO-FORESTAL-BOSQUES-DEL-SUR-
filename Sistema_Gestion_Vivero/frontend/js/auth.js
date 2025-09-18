@@ -20,7 +20,7 @@ async function logout() {
 // Redirect to index if already logged in
 window.addEventListener('DOMContentLoaded', async () => {
   // Opcional: ayuda de depuración
-  try { console.debug('API_BASE =', (await import('./api.js')).API_BASE); } catch {}
+  try { console.debug('API_BASE disponible'); } catch {}
 
   const user = await me();
   if (user) {

@@ -6,21 +6,8 @@
   <title>Vivero Bosques del Sur - Gestión</title>
   <link rel="stylesheet" href="../css/styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" src="../js/navigation.js"></script>
   <script type="module" src="../js/main.js"></script>
-  
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('nav button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-          document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
-          btn.classList.add('active');
-          document.getElementById(btn.dataset.target).classList.add('active');
-        });
-      });
-      document.querySelector('nav button').click();
-    });
-  </script>
 </head>
 <body>
   <header>

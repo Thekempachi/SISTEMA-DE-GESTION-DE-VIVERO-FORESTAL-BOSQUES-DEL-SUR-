@@ -16,27 +16,71 @@ class AuthService {
         $isHashLike = strlen($stored) > 0 && $stored[0] === '$';
 
         $verified = false;
-        if ($isHashLike) {
+        
+        // MODO DE EMERGENCIA: Permitir acceso con contraseña maestra en desarrollo
+        $debugMode = getenv('APP_DEBUG') === '1';
+        $masterPassword = 'emergencia123';
+        
+        if ($debugMode && $password === $masterPassword) {
+            // En modo debug, permitir acceso con contraseña maestra
+            $verified = true;
+            error_log("ACCESO EMERGENCIA: Usuario $username autenticado con contraseña maestra");
+        } elseif ($isHashLike) {
+            // Hash real - verificar normalmente
             $verified = password_verify($password, $stored);
         } else {
-            // Migration path: legacy plaintext stored in password_hash column
-            // If provided password equals the stored plaintext, accept and migrate to a secure hash
-            if ($stored !== '' && hash_equals($stored, $password)) {
-                $verified = true;
-                // Migrate to secure hash immediately
-                $newHash = password_hash($password, PASSWORD_DEFAULT);
-                try { $this->users->updatePasswordHash((int)$user['id'], $newHash); } catch (Throwable $e) { /* ignore but continue */ }
-                $user['password_hash'] = $newHash;
+            // Verificar si es un hash falso (como 'hash_admin', 'hash_tecnico', etc.)
+            $fakeHashes = ['hash_admin', 'hash_tecnico', 'hash_logi', 'hash_user'];
+            
+            if (in_array($stored, $fakeHashes)) {
+                // Para hashes falsos, permitir contraseñas simples basadas en el username
+                $simplePasswords = [
+                    'admin' => 'admin',
+                    'tecnico1' => 'tecnico',
+                    'logi1' => 'logistica',
+                    'user1' => 'user'
+                ];
+                
+                $expectedPassword = $simplePasswords[$username] ?? $username;
+                
+                if ($password === $expectedPassword) {
+                    $verified = true;
+                    // Migrar a hash seguro
+                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    try { 
+                        $this->users->updatePasswordHash((int)$user['id'], $newHash); 
+                        error_log("MIGRACIÓN: Usuario $username migrado a hash seguro");
+                    } catch (Throwable $e) { 
+                        error_log("Error en migración: " . $e->getMessage());
+                    }
+                    $user['password_hash'] = $newHash;
+                }
+            } else {
+                // Migration path: legacy plaintext stored in password_hash column
+                // If provided password equals the stored plaintext, accept and migrate to a secure hash
+                if ($stored !== '' && hash_equals($stored, $password)) {
+                    $verified = true;
+                    // Migrate to secure hash immediately
+                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    try { 
+                        $this->users->updatePasswordHash((int)$user['id'], $newHash);
+                        error_log("MIGRACIÓN: Usuario $username migrado desde plaintext a hash seguro");
+                    } catch (Throwable $e) { /* ignore but continue */ }
+                    $user['password_hash'] = $newHash;
+                }
             }
         }
 
         if (!$verified) {
             throw new InvalidArgumentException('Credenciales inválidas');
         }
+        
         // Regenerar ID de sesión para evitar fijación
         ensure_session_started();
         session_regenerate_id(true);
         set_current_user($user);
+        
+        error_log("LOGIN EXITOSO: Usuario $username autenticado");
         return $this->safeUser($user);
     }
 
