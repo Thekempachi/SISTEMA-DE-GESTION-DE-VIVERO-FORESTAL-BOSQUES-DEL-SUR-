@@ -70,9 +70,14 @@
           </table>
         </div>
         <div class="card">
-          <h3>Catálogos</h3>
-          <p>Inicializa catálogos y usuarios base si es necesario.</p>
-          <div class="actions"><button type="button" id="seed-btn">Inicializar catálogos</button> <span id="seed-msg" class="muted"></span></div>
+          <h3>Base de Datos</h3>
+          <p>Verifica la conexión y estado de la base de datos.</p>
+          <div class="actions">
+            <button type="button" id="test-db-btn">Probar Conexión</button> 
+            <button type="button" id="init-db-btn">Inicializar BD</button>
+            <button type="button" id="seed-btn">Cargar Datos</button>
+            <span id="db-msg" class="muted"></span>
+          </div>
         </div>
       </div>
     </section>

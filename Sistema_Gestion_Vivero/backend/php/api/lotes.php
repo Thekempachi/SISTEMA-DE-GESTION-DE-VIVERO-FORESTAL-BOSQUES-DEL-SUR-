@@ -1,3 +1,5 @@
 <?php
-// Usar API simple por ahora
-include __DIR__ . '/lotes_simple.php';
+require_once __DIR__ . '/../controllers/LotesController.php';
+
+// Delegar toda la lógica al controlador manteniendo la ruta y el contrato
+LotesController::handle();

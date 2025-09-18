@@ -219,18 +219,57 @@ function bindForms() {
       }
     };
     
-    // Seed
+    // Test Database Connection
+    safeBind('test-db-btn', 'click', async () => {
+      try {
+        const msg = document.getElementById('db-msg');
+        if (msg) msg.textContent = 'Probando conexión...';
+        
+        const result = await api('test_db.php');
+        if (result.ok) {
+          if (msg) msg.textContent = `✅ Conectado a ${result.database_info.database}. Tablas: ${result.tables.existing.length}/${result.tables.required.length}`;
+          if (result.tables.missing.length > 0) {
+            if (msg) msg.textContent += ` (Faltan: ${result.tables.missing.join(', ')})`;
+          }
+        } else {
+          if (msg) msg.textContent = `❌ ${result.error}`;
+        }
+      } catch (e) {
+        const msg = document.getElementById('db-msg');
+        if (msg) msg.textContent = `❌ Error: ${e.message}`;
+      }
+    });
+
+    // Initialize Database
+    safeBind('init-db-btn', 'click', async () => {
+      try {
+        const msg = document.getElementById('db-msg');
+        if (msg) msg.textContent = 'Inicializando base de datos...';
+        
+        const result = await api('init_db.php');
+        if (result.ok) {
+          if (msg) msg.textContent = '✅ Base de datos inicializada correctamente';
+        } else {
+          if (msg) msg.textContent = `❌ ${result.error}`;
+        }
+      } catch (e) {
+        const msg = document.getElementById('db-msg');
+        if (msg) msg.textContent = `❌ Error: ${e.message}`;
+      }
+    });
+
+    // Seed Data
     safeBind('seed-btn', 'click', async () => {
       try {
-        const msg = document.getElementById('seed-msg');
-        if (msg) msg.textContent = 'Inicializando...';
+        const msg = document.getElementById('db-msg');
+        if (msg) msg.textContent = 'Cargando datos de ejemplo...';
         await loadCatalogs(true);
-        if (msg) msg.textContent = 'Listo';
+        if (msg) msg.textContent = '✅ Datos cargados correctamente';
         await listEspecies();
         await listLotes();
       } catch (e) {
-        const msg = document.getElementById('seed-msg');
-        if (msg) msg.textContent = e.message;
+        const msg = document.getElementById('db-msg');
+        if (msg) msg.textContent = `❌ Error: ${e.message}`;
       }
     });
 

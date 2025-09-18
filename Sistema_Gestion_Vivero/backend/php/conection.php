@@ -2,6 +2,11 @@
 // Simple PDO connection helper and JSON response utilities
 // Hostinger shared hosting friendly: no Composer/.env required
 
+// Cargar configuración local si existe (para desarrollo)
+if (file_exists(__DIR__ . '/config_local.php')) {
+    require_once __DIR__ . '/config_local.php';
+}
+
 // Basic CORS for development: reflect Origin and allow credentials
 // In producción, restringe el origen explícitamente.
 function setup_cors(): void {
