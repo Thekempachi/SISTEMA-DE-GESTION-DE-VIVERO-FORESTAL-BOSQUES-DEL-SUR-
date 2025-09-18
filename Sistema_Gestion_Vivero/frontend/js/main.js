@@ -526,8 +526,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Esperar a que la navegación esté lista
     await new Promise(resolve => setTimeout(resolve, 200));
     
+    let user;
     try {
-      await ensureAuth();
+      user = await ensureAuth();
+      const userNameEl = document.getElementById('user-name');
+      if (userNameEl && user) {
+        // Display user's name, fallback to username
+        userNameEl.textContent = `Hola, ${user.nombre || user.username}`;
+      }
     } catch (authError) {
       console.error('Authentication error:', authError);
       return; // Detener la inicialización si no hay autenticación
