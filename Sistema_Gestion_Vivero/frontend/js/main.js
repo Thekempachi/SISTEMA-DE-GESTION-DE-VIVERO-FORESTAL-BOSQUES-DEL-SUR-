@@ -23,7 +23,7 @@ async function renderKPIs() {
       const kOr = document.getElementById('kpi-ordenes'); if (kOr) kOr.textContent = countO;
     } catch { /* ignore */ }
   } catch (error) {
-    console.error('Error rendering KPIs:', error);
+    // Error rendering KPIs
   }
 }
 
@@ -48,11 +48,10 @@ async function renderResumenInventario() {
       }
       tbody.innerHTML = lines.sort((a,b)=>a.localeCompare(b)).join('');
     } catch (error) {
-      console.error('Error fetching inventory data:', error);
       tbody.innerHTML = '';
     }
   } catch (error) {
-    console.error('Error rendering inventory summary:', error);
+    // Error rendering inventory summary
   }
 }
 
@@ -65,7 +64,7 @@ function renderUltimosLotes(limit = 5) {
     const last = rows.slice(0, limit);
     tbody.innerHTML = last.map(l => `<tr><td>${l.codigo}</td><td>${l.especie}</td><td>${l.fecha_siembra||''}</td></tr>`).join('');
   } catch (error) {
-    console.error('Error rendering latest lots:', error);
+    // Error rendering latest lots
   }
 }
 
@@ -85,7 +84,7 @@ function renderPlantFicha(p, extra = {}) {
     if (extra.tamName) rows.push(`<div><strong>Tamaño:</strong> ${extra.tamName}</div>`);
     box.innerHTML = `<h4>Ficha de la Planta</h4><div class="grid">${rows.map(r=>`<div class="card">${r}</div>`).join('')}</div>`;
   } catch (error) {
-    console.error('Error rendering plant profile:', error);
+    // Error rendering plant profile
   }
 }
 
@@ -111,9 +110,7 @@ async function loadCatalogs(seed = false) {
   try {
     const data = await api(`catalogs.php${seed ? '?seed=1' : ''}`);
     state.catalogs = data.catalogs || {};
-    console.log('Catálogos cargados:', Object.keys(state.catalogs));
   } catch (error) {
-    console.warn('Error cargando catálogos, usando valores por defecto:', error.message);
     state.catalogs = {};
   }
 
@@ -201,7 +198,6 @@ async function listOrdenes() {
 
 function bindForms() {
   try {
-    console.log('Binding forms...');
     
     // Helper function to safely get elements and add event listeners
     const safeBind = (elementId, eventType, handler) => {
@@ -213,7 +209,6 @@ function bindForms() {
         }
         return false;
       } catch (error) {
-        console.error(`Error binding ${elementId}:`, error);
         return false;
       }
     };
@@ -313,7 +308,7 @@ function bindForms() {
         const histLote = document.getElementById('hist-lote');
         if (histLote) await listFasesByLote(histLote.value);
       } catch (error) {
-        console.error('Error handling hist-lote change:', error);
+        // Error handling hist-lote change
       }
     });
     
@@ -327,7 +322,7 @@ function bindForms() {
         const cfLoteFase = document.getElementById('cf-lote-fase');
         if (cfLoteFase) fillSelect(cfLoteFase, active, { value: 'id', label: 'fase_nombre' });
       } catch (error) {
-        console.error('Error handling cf-lote change:', error);
+        // Error handling cf-lote change
       }
     });
     
@@ -520,7 +515,7 @@ function bindForms() {
       }
     });
     
-    console.log('Forms bound successfully');
+    // Forms bound successfully
   } catch (error) {
     console.error('Error in bindForms:', error);
   }
@@ -528,7 +523,6 @@ function bindForms() {
 
 window.addEventListener('DOMContentLoaded', async () => {
   try {
-    console.log('Initializing application...');
     
     // Esperar a que la navegación esté lista
     await new Promise(resolve => setTimeout(resolve, 200));
@@ -542,62 +536,61 @@ window.addEventListener('DOMContentLoaded', async () => {
         userNameEl.textContent = `Hola, ${user.nombre || user.username}`;
       }
     } catch (authError) {
-      console.error('Authentication error:', authError);
       return; // Detener la inicialización si no hay autenticación
     }
     
     try {
       await loadCatalogs();
     } catch (catalogError) {
-      console.error('Error loading catalogs:', catalogError);
+      // Error loading catalogs
     }
     
     try {
       await listEspecies();
     } catch (especiesError) {
-      console.error('Error loading especies:', especiesError);
+      // Error loading especies
     }
     
     try {
       await listLotes();
     } catch (lotesError) {
-      console.error('Error loading lotes:', lotesError);
+      // Error loading lotes
     }
     
     try {
       await listPlantas();
     } catch (plantasError) {
-      console.error('Error loading plantas:', plantasError);
+      // Error loading plantas
     }
     
     try {
       await listInventario();
     } catch (inventarioError) {
-      console.error('Error loading inventario:', inventarioError);
+      // Error loading inventario
     }
     
     try {
       await listOrdenes();
     } catch (ordenesError) {
-      console.error('Error loading ordenes:', ordenesError);
+      // Error loading ordenes
     }
     
     try {
       await renderDashboard();
     } catch (dashboardError) {
-      console.error('Error rendering dashboard:', dashboardError);
+      // Error rendering dashboard
     }
     
-    console.log('Application initialized successfully');
+    // Application initialized successfully
     
   } catch (e) {
-    console.error('Fatal initialization error:', e);
+    // Fatal initialization error
   }
   
   try {
     bindForms();
   } catch (bindError) {
-    console.error('Error binding forms:', bindError);
+    // Error binding forms
   }
 
   // Logout button - Implementación profesional mejorada
@@ -607,7 +600,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     import('./auth.js').then(({ handleLogout }) => {
       logoutBtn.addEventListener('click', async (event) => {
         event.preventDefault();
-        console.debug('Logout button clicked by user');
+        // Logout button clicked by user
         
         // Obtener información del usuario para mensaje personalizado
         const userNameElement = document.getElementById('user-name');
@@ -621,10 +614,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         
         if (confirmLogout) {
           try {
-            console.debug(`Usuario ${userName} confirmó logout. Iniciando proceso...`);
+            // Usuario confirmó logout. Iniciando proceso...
             await handleLogout(logoutBtn);
           } catch (error) {
-            console.error('Error inesperado en logout:', error);
+            // Error inesperado en logout
             
             // Mostrar feedback de error al usuario
             const iconElement = logoutBtn.querySelector('.logout-icon');
@@ -642,7 +635,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             }, 1000);
           }
         } else {
-          console.debug('Usuario canceló el logout');
+          // Usuario canceló el logout
           // Devolver el foco al botón si el usuario canceló
           logoutBtn.focus();
         }
@@ -651,14 +644,14 @@ window.addEventListener('DOMContentLoaded', async () => {
       // Añadir soporte para teclado (Escape key para cancelar)
       logoutBtn.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-          console.debug('Escape key pressed - canceling logout focus');
+          // Escape key pressed - canceling logout focus
           logoutBtn.blur();
         }
       });
       
-      console.debug('Logout button event listener attached successfully');
+      // Logout button event listener attached successfully
     }).catch(error => {
-      console.error('Error importing auth module:', error);
+      // Error importing auth module
       
       // Fallback robusto: usar implementación básica si falla la importación
       logoutBtn.addEventListener('click', () => {
@@ -674,12 +667,12 @@ window.addEventListener('DOMContentLoaded', async () => {
       });
     });
   } else {
-    console.error('Critical: Logout button (#logout-btn) not found on the page.');
+    // Critical: Logout button (#logout-btn) not found on the page.
     
     // Fallback de emergencia: intentar redirigir automáticamente después de un tiempo
     setTimeout(() => {
       if (!document.getElementById('logout-btn')) {
-        console.warn('Logout button still not found - possible UI corruption');
+        // Logout button still not found - possible UI corruption
       }
     }, 5000);
   }

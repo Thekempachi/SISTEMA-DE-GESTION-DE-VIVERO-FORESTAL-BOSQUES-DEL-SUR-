@@ -5,7 +5,6 @@ export { login, me, logout, handleLogout };
 
 async function login(username, password) {
   try {
-    console.debug('Intentando login con:', { username, apiBase: API_BASE });
 
     const res = await fetch(`${API_BASE}/auth.php?action=login`, {
       method: 'POST',
@@ -14,26 +13,20 @@ async function login(username, password) {
       body: JSON.stringify({ username, password })
     });
 
-    console.debug('Respuesta del servidor:', { status: res.status, ok: res.ok });
-
     let data;
     try {
       data = await res.json();
-      console.debug('Datos de respuesta:', data);
     } catch (jsonError) {
-      console.error('Error parseando JSON:', jsonError);
       throw new Error('Respuesta inválida del servidor');
     }
 
     if (!res.ok) {
       const errorMsg = data.error || `Error HTTP ${res.status}`;
-      console.error('Error HTTP:', errorMsg);
       throw new Error(errorMsg);
     }
 
     if (!data.ok) {
       const errorMsg = data.error || 'Error en el login';
-      console.error('Error de aplicación:', errorMsg);
       throw new Error(errorMsg);
     }
 

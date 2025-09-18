@@ -62,23 +62,22 @@ try {
     $debug['db_connection'] = 'FAILED: ' . $e->getMessage();
 }
 
-// Verificar usuario actual si está autenticado
-$current_user = null;
-try {
-    $current_user = current_user();
-    if ($current_user) {
-        $current_user = [
-            'id' => $current_user['id'],
-            'username' => $current_user['username'],
-            'nombre' => $current_user['nombre'],
-            'rol_id' => $current_user['rol_id'],
-            'rol' => $current_user['rol']
-        ];
+// Verificar usuario actual si está autenticado (solo en modo debug)
+if (getenv('APP_DEBUG') === '1') {
+    $current_user = null;
+    try {
+        $current_user = current_user();
+        if ($current_user) {
+            $current_user = [
+                'id' => $current_user['id'],
+                'username' => $current_user['username'],
+                'rol' => $current_user['rol']
+            ];
+        }
+    } catch (Exception $e) {
+        $current_user = ['error' => 'No autenticado'];
     }
-} catch (Exception $e) {
-    $current_user = ['error' => 'No autenticado'];
+    $debug['current_user'] = $current_user;
 }
-
-$debug['current_user'] = $current_user;
 
 echo json_encode($debug, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

@@ -11,7 +11,6 @@ export const API_BASE = (() => {
   // Para producción, construir la ruta al backend de forma más robusta
   try {
     const path = location.pathname;
-    console.debug('Current path:', path);
 
     // Buscar diferentes patrones de ruta
     const patterns = [
@@ -26,7 +25,6 @@ export const API_BASE = (() => {
       if (index !== -1) {
         const basePath = path.substring(0, index);
         const backendPath = `${basePath}/Sistema_Gestion_Vivero/backend/php/api`;
-        console.debug('Using backend path:', backendPath);
         return backendPath;
       }
     }
