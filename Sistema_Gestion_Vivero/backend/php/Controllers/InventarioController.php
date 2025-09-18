@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Inventario/InventarioRepository.php';
-require_once __DIR__ . '/../Domain/Inventario/InventarioService.php';
+require_once __DIR__ . '/../repository/InventarioRepository.php';
+require_once __DIR__ . '/../service/InventarioService.php';
 
 class InventarioController {
     public static function handle(): void {

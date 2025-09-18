@@ -17,7 +17,8 @@ Sube el repositorio completo manteniendo esta estructura de carpetas (rutas rela
 - `.../Sistema_Gestion_Vivero/backend/php/api/`
   - `*.php` (endpoints de la API)
 - `.../Sistema_Gestion_Vivero/backend/php/Controllers/`
-- `.../Sistema_Gestion_Vivero/backend/php/Domain/`
+- `.../Sistema_Gestion_Vivero/backend/php/service/`
+- `.../Sistema_Gestion_Vivero/backend/php/repository/`
 - `.../Sistema_Gestion_Vivero/backend/php/conection.php`
 
 Sugerencia: no necesitas subir `composer.json`, `vendor/` ni `.env`. El sistema no depende de ellos en el hosting compartido.

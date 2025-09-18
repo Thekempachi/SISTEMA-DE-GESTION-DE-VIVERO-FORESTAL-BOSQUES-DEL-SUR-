@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Despachos/DespachoRepository.php';
-require_once __DIR__ . '/../Domain/Despachos/DespachoService.php';
+require_once __DIR__ . '/../repository/DespachoRepository.php';
+require_once __DIR__ . '/../service/DespachoService.php';
 
 class DespachosController {
     public static function handle(): void {

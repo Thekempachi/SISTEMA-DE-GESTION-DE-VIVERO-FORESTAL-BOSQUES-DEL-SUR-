@@ -24,4 +24,9 @@ class UserRepository {
         $stmt = $this->pdo->prepare("UPDATE usuarios SET password_hash = ? WHERE id = ?");
         $stmt->execute([$newHash, $id]);
     }
+
+    public function getAllUsers(): array {
+        $stmt = $this->pdo->query("SELECT username FROM usuarios ORDER BY username");
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 }

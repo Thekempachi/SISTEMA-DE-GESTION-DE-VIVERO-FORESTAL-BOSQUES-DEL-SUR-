@@ -12,11 +12,11 @@ Este documento describe la arquitectura en capas del proyecto y su organización
   - Reciben la petición (método HTTP, query string), validan parámetros mínimos, llaman al Servicio y regresan JSON con `send_json()`.
   - Aplican seguridad de sesión/rol donde corresponda (`require_auth()` / `require_role()`).
 
-- **Servicios (lógica de negocio)**: `backend/php/Domain/*/*Service.php`
+- **Servicios (lógica de negocio)**: `backend/php/service/*Service.php`
   - Encapsulan reglas de negocio, validaciones y, si hace falta, transacciones simples.
   - No conocen el protocolo HTTP; retornan datos o lanzan excepciones.
 
-- **Repositorios (acceso a datos)**: `backend/php/Domain/*/*Repository.php`
+- **Repositorios (acceso a datos)**: `backend/php/repository/*Repository.php`
   - Operaciones SQL mediante PDO. No hay ORMs ni dependencias externas.
 
 - **Utilidades y Conexión**: `backend/php/conection.php`
@@ -71,7 +71,8 @@ Sistema_Gestion_Vivero/
 │  └─ php/
 │     ├─ api/                # Entradas HTTP muy delgadas (delegan en controladores)
 │     ├─ Controllers/        # Controladores (HTTP -> Servicios)
-│     ├─ Domain/             # Servicios/Repositorios (negocio + datos)
+│     ├─ service/            # Lógica de negocio
+│     ├─ repository/         # Acceso a datos
 │     └─ conection.php       # PDO, utilidades HTTP, sesiones y CORS
 └─ frontend/
    ├─ html/
@@ -102,7 +103,7 @@ Sistema_Gestion_Vivero/
 
 ## Recomendaciones de seguridad
 - `backend/php/conection.php` soporta variables de entorno `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`. Configure el hosting para no hardcodear credenciales en el repo.
-- Considere mover credenciales a `.env` (no versionado) y cargar con `vlucas/phpdotenv` si se usará Composer.
+- Para desarrollo local, se recomienda usar un archivo `.env` (no versionado) para las credenciales y `APP_DEBUG`. Aunque este proyecto no usa Composer, puedes cargar el `.env` manualmente en tus scripts de desarrollo.
 
 ## Plan para migrar el resto de endpoints
 Para cada archivo en `backend/php/api/`:
@@ -132,7 +133,7 @@ Siguientes candidatos:
 - Inventario: listar y actualizar (sección Inventario).
 
 ## Próximos pasos sugeridos (backend)
-- Migrar `lotes.php` y `fases.php` a la nueva estructura (alto impacto en flujo).
+- **Completado:** Migrar todos los endpoints de la API a la nueva estructura de controladores, servicios y repositorios.
 - Añadir logs/try-catch más específicos por operación.
 - Añadir validaciones de dominio en servicios (por ejemplo, rangos y combinaciones válidas).
 

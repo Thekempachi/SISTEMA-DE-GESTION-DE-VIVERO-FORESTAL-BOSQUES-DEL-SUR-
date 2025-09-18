@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Especies/EspecieRepository.php';
-require_once __DIR__ . '/../Domain/Especies/EspecieService.php';
+require_once __DIR__ . '/../repository/EspecieRepository.php';
+require_once __DIR__ . '/../service/EspecieService.php';
 
 class EspeciesController {
     public static function handle(): void {

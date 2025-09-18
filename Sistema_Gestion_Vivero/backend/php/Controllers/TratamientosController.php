@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Tratamientos/TratamientoRepository.php';
-require_once __DIR__ . '/../Domain/Tratamientos/TratamientoService.php';
+require_once __DIR__ . '/../repository/TratamientoRepository.php';
+require_once __DIR__ . '/../service/TratamientoService.php';
 
 class TratamientosController {
     public static function handle(): void {

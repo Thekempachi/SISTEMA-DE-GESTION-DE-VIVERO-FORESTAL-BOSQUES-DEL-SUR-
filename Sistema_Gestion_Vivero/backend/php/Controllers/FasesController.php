@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Fases/FaseRepository.php';
-require_once __DIR__ . '/../Domain/Fases/FaseService.php';
+require_once __DIR__ . '/../repository/FaseRepository.php';
+require_once __DIR__ . '/../service/FaseService.php';
 
 class FasesController {
     public static function handle(): void {

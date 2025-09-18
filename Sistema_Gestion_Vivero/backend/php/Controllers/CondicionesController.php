@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Condiciones/CondicionRepository.php';
-require_once __DIR__ . '/../Domain/Condiciones/CondicionService.php';
+require_once __DIR__ . '/../repository/CondicionRepository.php';
+require_once __DIR__ . '/../service/CondicionService.php';
 
 class CondicionesController {
     public static function handle(): void {

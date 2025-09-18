@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Lotes/LoteRepository.php';
-require_once __DIR__ . '/../Domain/Lotes/LoteService.php';
+require_once __DIR__ . '/../repository/LoteRepository.php';
+require_once __DIR__ . '/../service/LoteService.php';
 
 class LotesController {
     public static function handle(): void {

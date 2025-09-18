@@ -16,8 +16,8 @@ class AuthController {
 
             if ($method === 'POST' && $action === 'login') {
                 // Requiere BD
-                require_once __DIR__ . '/../Domain/Auth/AuthService.php';
-                require_once __DIR__ . '/../Domain/Auth/UserRepository.php';
+                require_once __DIR__ . '/../service/AuthService.php';
+                require_once __DIR__ . '/../repository/UserRepository.php';
                 $pdo = db();
                 $service = new AuthService(new UserRepository($pdo));
                 $data = json_input();

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../conection.php';
-require_once __DIR__ . '/../Domain/Plantas/PlantaRepository.php';
-require_once __DIR__ . '/../Domain/Plantas/PlantaService.php';
+require_once __DIR__ . '/../repository/PlantaRepository.php';
+require_once __DIR__ . '/../service/PlantaService.php';
 
 class PlantasController {
     public static function handle(): void {
