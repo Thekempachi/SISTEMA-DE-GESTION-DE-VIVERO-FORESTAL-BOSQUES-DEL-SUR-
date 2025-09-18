@@ -33,7 +33,7 @@ define('DB_PASS', getenv('DB_PASS') ?: 'C0ntrsen@102');
 
 function db(): PDO {
     static $pdo = null;
-    if ($pdo === null) {z
+    if ($pdo === null) {
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4';
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
