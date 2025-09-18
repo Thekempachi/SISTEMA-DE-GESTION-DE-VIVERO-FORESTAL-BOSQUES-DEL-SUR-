@@ -112,12 +112,9 @@ async function loadCatalogs(seed = false) {
     const data = await api(`catalogs.php${seed ? '?seed=1' : ''}`);
     state.catalogs = data.catalogs || {};
     
-    console.log('Catálogos cargados:', state.catalogs);
-    
     // Fill selects depending on catalogs (con valores por defecto si faltan)
     const tipoEspecie = document.getElementById('tipo-especie');
     if (tipoEspecie) {
-      console.log('Llenando tipo-especie con:', state.catalogs.tipo_especie || []);
       fillSelect(tipoEspecie, state.catalogs.tipo_especie || []);
     }
     const ifFase = document.getElementById('if-fase');
