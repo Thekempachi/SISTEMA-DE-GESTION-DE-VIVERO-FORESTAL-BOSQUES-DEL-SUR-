@@ -78,6 +78,14 @@ if (getenv('APP_DEBUG') === '1') {
         $current_user = ['error' => 'No autenticado'];
     }
     $debug['current_user'] = $current_user;
+
+    // Agregar información adicional para debugging de autenticación
+    $debug['auth_test'] = [
+        'session_status' => session_status(),
+        'session_id' => session_id(),
+        'session_save_path' => session_save_path(),
+        'session_cookie_params' => session_get_cookie_params()
+    ];
 }
 
 echo json_encode($debug, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/../conection.php';
 
+// Declarar InvalidArgumentException si no existe
+if (!class_exists('InvalidArgumentException')) {
+    class InvalidArgumentException extends Exception {}
+}
+
 class AuthController {
     public static function handle(): void {
         try {
@@ -41,19 +46,26 @@ class AuthController {
 
             send_json(['error' => 'Método o acción no permitidos'], 405);
         } catch (Throwable $e) {
+            // Log detallado del error
+            error_log("AuthController Error: " . $e->getMessage());
+            error_log("File: " . $e->getFile() . " Line: " . $e->getLine());
+            error_log("Stack trace: " . $e->getTraceAsString());
+
             // Devuelve códigos adecuados según el tipo de error
             if ($e instanceof InvalidArgumentException) {
                 // Credenciales inválidas, no es error del servidor
                 send_json(['error' => $e->getMessage()], 401);
-            }
-            if ($e instanceof PDOException) {
+            } elseif ($e instanceof PDOException) {
                 // Error de base de datos: detallar solo en debug
                 $debug = getenv('APP_DEBUG') === '1';
-                $msg = $debug ? ('DB: ' . $e->getMessage()) : 'Error de base de datos';
+                $msg = $debug ? ('Error de base de datos: ' . $e->getMessage()) : 'Error de base de datos';
+                send_json(['error' => $msg], 500);
+            } else {
+                // Error interno del servidor
+                $debug = getenv('APP_DEBUG') === '1';
+                $msg = $debug ? ('Error interno: ' . $e->getMessage()) : 'Error interno del servidor';
                 send_json(['error' => $msg], 500);
             }
-            // Fallback: error interno genérico
-            send_json(['error' => $e->getMessage()], 500);
         }
     }
 }
