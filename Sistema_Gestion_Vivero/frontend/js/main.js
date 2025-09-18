@@ -586,4 +586,19 @@ window.addEventListener('DOMContentLoaded', async () => {
   } catch (bindError) {
     console.error('Error binding forms:', bindError);
   }
+
+  // Logout button
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await api('auth.php?action=logout', { method: 'POST' });
+      } catch (error) {
+        console.error('Logout failed', error);
+        // Still redirect even if API fails, as session might be gone
+      } finally {
+        window.location.href = './login.html';
+      }
+    });
+  }
 });

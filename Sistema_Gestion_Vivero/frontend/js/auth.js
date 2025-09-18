@@ -95,22 +95,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Botón para crear usuario admin de prueba (seed minimal)
-  const seedBtn = document.getElementById('seed-admin-btn');
-  const seedMsg = document.getElementById('seed-admin-msg');
-  if (seedBtn && seedMsg) {
-    seedBtn.addEventListener('click', async () => {
-      seedMsg.textContent = 'Creando usuario admin...';
-      try {
-        await api('catalogs.php?seed=1');
-        seedMsg.textContent = 'Listo: usuario admin/admin123 creado (si no existía).';
-        const u = document.getElementById('username');
-        const p = document.getElementById('password');
-        if (u && p) { u.value = 'admin'; p.value = 'admin123'; }
-      } catch (e) {
-        seedMsg.textContent = e.message;
-      }
-    });
-  }
+
 });
 
