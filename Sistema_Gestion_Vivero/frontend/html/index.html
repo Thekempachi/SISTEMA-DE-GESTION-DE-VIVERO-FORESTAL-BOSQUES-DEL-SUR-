@@ -32,15 +32,15 @@
     </div>
   </header>
   <nav>
-    <button type="button" data-target="dashboard">Dashboard</button>
-    <button type="button" data-target="especies">Especies</button>
-    <button type="button" data-target="lotes">Lotes</button>
-    <button type="button" data-target="fases">Fases</button>
-    <button type="button" data-target="tratamientos">Tratamientos</button>
-    <button type="button" data-target="condiciones">Condiciones</button>
-    <button type="button" data-target="plantas">Plantas</button>
-    <button type="button" data-target="inventario">Inventario</button>
-    <button type="button" data-target="despachos">Despachos</button>
+    <button type="button" data-target="dashboard" onclick="showSection('dashboard')" class="active">Dashboard</button>
+    <button type="button" data-target="especies" onclick="showSection('especies')">Especies</button>
+    <button type="button" data-target="lotes" onclick="showSection('lotes')">Lotes</button>
+    <button type="button" data-target="fases" onclick="showSection('fases')">Fases</button>
+    <button type="button" data-target="tratamientos" onclick="showSection('tratamientos')">Tratamientos</button>
+    <button type="button" data-target="condiciones" onclick="showSection('condiciones')">Condiciones</button>
+    <button type="button" data-target="plantas" onclick="showSection('plantas')">Plantas</button>
+    <button type="button" data-target="inventario" onclick="showSection('inventario')">Inventario</button>
+    <button type="button" data-target="despachos" onclick="showSection('despachos')">Despachos</button>
   </nav>
   <main>
     <section id="dashboard" class="active">
@@ -347,8 +347,40 @@
   <!-- Scripts al final del body -->
   <script type="module" src="../js/main.js"></script>
   
-  <!-- Función de logout global como fallback -->
+  <!-- Funciones globales -->
   <script>
+    // Función simple para navegación
+    function showSection(sectionId) {
+      console.log('Mostrando sección:', sectionId);
+      
+      // Ocultar todas las secciones
+      const sections = document.querySelectorAll('main section');
+      sections.forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Remover clase active de todos los botones
+      const navButtons = document.querySelectorAll('nav button');
+      navButtons.forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Mostrar la sección seleccionada
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.style.display = 'block';
+        console.log('Sección mostrada:', sectionId);
+      } else {
+        console.error('Sección no encontrada:', sectionId);
+      }
+      
+      // Activar el botón correspondiente
+      const activeBtn = document.querySelector(`nav button[data-target="${sectionId}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+      }
+    }
+
     async function handleLogoutClick() {
       console.log('Logout clicked via onclick handler');
       
@@ -391,8 +423,29 @@
       }, 800);
     }
 
-    // También configurar el evento cuando el DOM esté listo
+    // Configurar navegación cuando el DOM esté listo
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('Configurando navegación...');
+      
+      // Configurar botones de navegación
+      const navButtons = document.querySelectorAll('nav button[data-target]');
+      console.log('Botones encontrados:', navButtons.length);
+      
+      navButtons.forEach(button => {
+        const target = button.getAttribute('data-target');
+        console.log('Configurando botón:', target);
+        
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Click en botón:', target);
+          showSection(target);
+        });
+      });
+      
+      // Mostrar dashboard por defecto
+      showSection('dashboard');
+      
+      // Configurar logout
       const logoutBtn = document.getElementById('logout-btn');
       if (logoutBtn) {
         console.log('Configurando logout button via DOMContentLoaded');
