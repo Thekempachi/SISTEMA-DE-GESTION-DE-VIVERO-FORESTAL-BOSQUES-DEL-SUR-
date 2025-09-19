@@ -66,15 +66,27 @@ export async function api(endpoint, options = {}) {
 export const state = { catalogs: {}, especies: [], lotes: [] };
 
 export function fillSelect(el, items, opts = {}) {
+  if (!el) return;
+  
   el.innerHTML = '';
-  if (opts.placeholder) {
-    const o = document.createElement('option'); o.value = ''; o.textContent = opts.placeholder; el.appendChild(o);
-  }
+  
+  // Agregar placeholder por defecto si no hay uno específico
+  const placeholder = opts.placeholder || '— Seleccionar —';
+  const o = document.createElement('option'); 
+  o.value = ''; 
+  o.textContent = placeholder; 
+  o.disabled = true;
+  o.selected = true;
+  el.appendChild(o);
+  
+  // Agregar opciones
   for (const it of items) {
-    const o = document.createElement('option');
-    o.value = it[opts.value || 'id'];
-    o.textContent = it[opts.label || 'nombre'];
-    el.appendChild(o);
+    const option = document.createElement('option');
+    option.value = it[opts.value || 'id'];
+    option.textContent = it[opts.label || 'nombre'];
+    el.appendChild(option);
   }
+  
+  console.log(`Selector ${el.id} llenado con ${items.length} opciones`);
 }
 

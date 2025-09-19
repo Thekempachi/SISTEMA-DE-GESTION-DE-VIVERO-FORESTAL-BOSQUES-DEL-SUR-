@@ -117,10 +117,20 @@ async function loadCatalogs(seed = false) {
     if (tipoEspecie) {
       fillSelect(tipoEspecie, state.catalogs.tipo_especie || []);
     }
+    // Fases de producción
     const ifFase = document.getElementById('if-fase');
     if (ifFase) fillSelect(ifFase, state.catalogs.fases_produccion || []);
+    
+    // Ubicaciones
     ['if-ubicacion','co-ubicacion','pl-ubicacion'].forEach(id => {
       const el = document.getElementById(id); if (el) fillSelect(el, state.catalogs.ubicaciones || [], { label: 'sector' });
+    });
+    
+    // Lotes para fases
+    const lotesSelIds = ['if-lote', 'cf-lote', 'hist-lote'];
+    lotesSelIds.forEach(id => { 
+      const el = document.getElementById(id); 
+      if (el) fillSelect(el, state.lotes || [], { value: 'id', label: 'codigo' }); 
     });
     const plSalud = document.getElementById('pl-salud');
     if (plSalud) fillSelect(plSalud, state.catalogs.estado_salud || []);
@@ -154,9 +164,17 @@ async function listLotes() {
   const data = await api('lotes.php');
   state.lotes = data.data || [];
   const tbody = document.getElementById('tabla-lotes');
-  if (tbody) tbody.innerHTML = state.lotes.map(l => `<tr><td>${l.codigo}</td><td>${l.especie}</td><td>${l.fecha_siembra}</td><td>${l.cantidad_semillas_usadas}</td><td>${l.proveedor}</td></tr>`).join('');
-  const lotesSelIds = ['if-lote','cf-lote','hist-lote','pl-lote'];
-  lotesSelIds.forEach(id => { const el = document.getElementById(id); if (el) fillSelect(el, state.lotes, { value: 'id', label: 'codigo' }); });
+  if (tbody) tbody.innerHTML = state.lotes.map(l => `<tr><td>${l.codigo}</td><td>${l.especie}</td><td>${l.fecha_siembra}</td><td>${l.cantidad_inicial}</td></tr>`).join('');
+  
+  // Fill lote selects - incluyendo los de fases
+  const lotesSelIds = ['lp-lote', 'pl-lote', 'if-lote', 'cf-lote', 'hist-lote'];
+  lotesSelIds.forEach(id => { 
+    const el = document.getElementById(id); 
+    if (el) {
+      fillSelect(el, state.lotes, { value: 'id', label: 'codigo' });
+      console.log(`Llenado selector ${id} con ${state.lotes.length} lotes`);
+    }
+  });
 }
 
 async function listFasesByLote(loteId) {
@@ -376,19 +394,10 @@ function bindForms() {
     });
 
     // Cambios de lote para historial y cierre
-    safeBind('hist-lote', 'change', async () => {
-      try {
-        const histLote = document.getElementById('hist-lote');
-        if (histLote) await listFasesByLote(histLote.value);
-      } catch (error) {
-        // Error handling hist-lote change
-      }
-    });
-    
     safeBind('cf-lote', 'change', async () => {
       try {
         const cfLote = document.getElementById('cf-lote');
-        if (!cfLote) return;
+        if (!cfLote || !cfLote.value) return;
         
         const rows = await listFasesByLote(cfLote.value);
         const active = rows.filter(r => String(r.en_progreso) === '1');
@@ -396,6 +405,17 @@ function bindForms() {
         if (cfLoteFase) fillSelect(cfLoteFase, active, { value: 'id', label: 'fase_nombre' });
       } catch (error) {
         // Error handling cf-lote change
+      }
+    });
+    
+    safeBind('hist-lote', 'change', async () => {
+      try {
+        const histLote = document.getElementById('hist-lote');
+        if (!histLote || !histLote.value) return;
+        
+        await listFasesByLote(histLote.value);
+      } catch (error) {
+        // Error handling hist-lote change
       }
     });
     
@@ -690,9 +710,254 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Configurar navegación
   setupNavigation();
   
+  // Event listeners para inicializar selectores de cada sección
+  window.addEventListener('especiesLoaded', async () => {
+    console.log('Evento especiesLoaded recibido');
+    await initializeEspeciesSelectors();
+  });
+  
+  window.addEventListener('lotesLoaded', async () => {
+    console.log('Evento lotesLoaded recibido');
+    await initializeLotesSelectors();
+  });
+  
+  window.addEventListener('fasesLoaded', async () => {
+    console.log('Evento fasesLoaded recibido');
+    await initializeFasesSelectors();
+  });
+  
+  window.addEventListener('tratamientosLoaded', async () => {
+    console.log('Evento tratamientosLoaded recibido');
+    await initializeTratamientosSelectors();
+  });
+  
+  window.addEventListener('condicionesLoaded', async () => {
+    console.log('Evento condicionesLoaded recibido');
+    await initializeCondicionesSelectors();
+  });
+  
+  window.addEventListener('plantasLoaded', async () => {
+    console.log('Evento plantasLoaded recibido');
+    await initializePlantasSelectors();
+  });
+  
+  window.addEventListener('inventarioLoaded', async () => {
+    console.log('Evento inventarioLoaded recibido');
+    await initializeInventarioSelectors();
+  });
+  
+  window.addEventListener('despachosLoaded', async () => {
+    console.log('Evento despachosLoaded recibido');
+    await initializeDespachosSelectors();
+  });
+  
   // Logout button - Versión simple y funcional
   setupLogoutButton();
 });
+
+// Función para inicializar selectores de especies
+async function initializeEspeciesSelectors() {
+  console.log('Inicializando selectores de especies...');
+  
+  // Asegurar que los catálogos estén cargados
+  if (!state.catalogs || !state.catalogs.tipo_especie) {
+    await loadCatalogs();
+  }
+  
+  // Llenar selector de tipo de especie
+  const tipoEspecie = document.getElementById('tipo-especie');
+  if (tipoEspecie && state.catalogs.tipo_especie) {
+    fillSelect(tipoEspecie, state.catalogs.tipo_especie || [], { placeholder: 'Seleccionar tipo...' });
+    console.log('Selector tipo-especie llenado con', state.catalogs.tipo_especie.length, 'tipos');
+  }
+  
+  console.log('Selectores de especies inicializados');
+}
+
+// Función para inicializar selectores de lotes
+async function initializeLotesSelectors() {
+  console.log('Inicializando selectores de lotes...');
+  
+  // Asegurar que las especies estén cargadas
+  if (!state.especies || state.especies.length === 0) {
+    await listEspecies();
+  }
+  
+  // Llenar selector de especies para lotes
+  const lpEspecie = document.getElementById('lp-especie');
+  if (lpEspecie && state.especies) {
+    fillSelect(lpEspecie, state.especies || [], { label: 'nombre_comun', placeholder: 'Seleccionar especie...' });
+    console.log('Selector lp-especie llenado con', state.especies.length, 'especies');
+  }
+  
+  console.log('Selectores de lotes inicializados');
+}
+
+// Función para inicializar selectores de fases
+async function initializeFasesSelectors() {
+  console.log('Inicializando selectores de fases...');
+  
+  // Asegurar que los catálogos estén cargados
+  if (!state.catalogs || !state.catalogs.fases_produccion) {
+    await loadCatalogs();
+  }
+  
+  // Asegurar que los lotes estén cargados
+  if (!state.lotes || state.lotes.length === 0) {
+    await listLotes();
+  }
+  
+  // Llenar selector de fases
+  const ifFase = document.getElementById('if-fase');
+  if (ifFase && state.catalogs.fases_produccion) {
+    fillSelect(ifFase, state.catalogs.fases_produccion || [], { placeholder: 'Seleccionar fase...' });
+    console.log('Selector if-fase llenado con', state.catalogs.fases_produccion.length, 'fases');
+  }
+  
+  // Llenar selector de ubicaciones
+  const ifUbicacion = document.getElementById('if-ubicacion');
+  if (ifUbicacion && state.catalogs.ubicaciones) {
+    fillSelect(ifUbicacion, state.catalogs.ubicaciones || [], { label: 'nombre', placeholder: 'Seleccionar ubicación...' });
+    console.log('Selector if-ubicacion llenado con', state.catalogs.ubicaciones.length, 'ubicaciones');
+  }
+  
+  console.log('Selectores de fases inicializados');
+}
+
+// Función para inicializar selectores de tratamientos
+async function initializeTratamientosSelectors() {
+  console.log('Inicializando selectores de tratamientos...');
+  
+  // Asegurar que los catálogos estén cargados
+  if (!state.catalogs || !state.catalogs.tipos_tratamiento) {
+    await loadCatalogs();
+  }
+  
+  // Llenar selector de tipos de tratamiento
+  const trTipo = document.getElementById('tr-tipo');
+  if (trTipo && state.catalogs.tipos_tratamiento) {
+    fillSelect(trTipo, state.catalogs.tipos_tratamiento || [], { placeholder: 'Seleccionar tipo...' });
+    console.log('Selector tr-tipo llenado con', state.catalogs.tipos_tratamiento.length, 'tipos');
+  }
+  
+  console.log('Selectores de tratamientos inicializados');
+}
+
+// Función para inicializar selectores de condiciones
+async function initializeCondicionesSelectors() {
+  console.log('Inicializando selectores de condiciones...');
+  
+  // Asegurar que los catálogos estén cargados
+  if (!state.catalogs || !state.catalogs.ubicaciones) {
+    await loadCatalogs();
+  }
+  
+  // Llenar selector de ubicaciones
+  const coUbicacion = document.getElementById('co-ubicacion');
+  if (coUbicacion && state.catalogs.ubicaciones) {
+    fillSelect(coUbicacion, state.catalogs.ubicaciones || [], { label: 'nombre', placeholder: 'Seleccionar ubicación...' });
+    console.log('Selector co-ubicacion llenado con', state.catalogs.ubicaciones.length, 'ubicaciones');
+  }
+  
+  console.log('Selectores de condiciones inicializados');
+}
+
+// Función para inicializar selectores de plantas
+async function initializePlantasSelectors() {
+  console.log('Inicializando selectores de plantas...');
+  
+  // Asegurar que los catálogos estén cargados
+  if (!state.catalogs) {
+    await loadCatalogs();
+  }
+  
+  // Asegurar que los lotes estén cargados
+  if (!state.lotes || state.lotes.length === 0) {
+    await listLotes();
+  }
+  
+  // Llenar selector de lotes
+  const plLote = document.getElementById('pl-lote');
+  if (plLote && state.lotes) {
+    fillSelect(plLote, state.lotes || [], { value: 'id', label: 'codigo', placeholder: 'Seleccionar lote...' });
+    console.log('Selector pl-lote llenado con', state.lotes.length, 'lotes');
+  }
+  
+  // Llenar selector de estado de salud
+  const plSalud = document.getElementById('pl-salud');
+  if (plSalud && state.catalogs.estado_salud) {
+    fillSelect(plSalud, state.catalogs.estado_salud || [], { placeholder: 'Seleccionar estado...' });
+    console.log('Selector pl-salud llenado con', state.catalogs.estado_salud.length, 'estados');
+  }
+  
+  // Llenar selector de ubicaciones
+  const plUbicacion = document.getElementById('pl-ubicacion');
+  if (plUbicacion && state.catalogs.ubicaciones) {
+    fillSelect(plUbicacion, state.catalogs.ubicaciones || [], { label: 'nombre', placeholder: 'Seleccionar ubicación...' });
+    console.log('Selector pl-ubicacion llenado con', state.catalogs.ubicaciones.length, 'ubicaciones');
+  }
+  
+  // Llenar selector de calidad
+  const plCalidad = document.getElementById('pl-calidad');
+  if (plCalidad && state.catalogs.clasificaciones_calidad) {
+    fillSelect(plCalidad, [{ id: '', nombre: '— sin asignar —' }, ...(state.catalogs.clasificaciones_calidad || [])], { placeholder: 'Seleccionar calidad...' });
+    console.log('Selector pl-calidad llenado');
+  }
+  
+  // Llenar selector de tamaño
+  const plTamano = document.getElementById('pl-tamano');
+  if (plTamano && state.catalogs.tamanos_plantas) {
+    fillSelect(plTamano, [{ id: '', codigo: '— sin asignar —' }, ...(state.catalogs.tamanos_plantas || [])], { label: 'codigo', placeholder: 'Seleccionar tamaño...' });
+    console.log('Selector pl-tamano llenado');
+  }
+  
+  console.log('Selectores de plantas inicializados');
+}
+
+// Función para inicializar selectores de inventario
+async function initializeInventarioSelectors() {
+  console.log('Inicializando selectores de inventario...');
+  
+  // Asegurar que los catálogos estén cargados
+  if (!state.catalogs) {
+    await loadCatalogs();
+  }
+  
+  // Llenar selector de calidad
+  const invCalidad = document.getElementById('inv-calidad');
+  if (invCalidad && state.catalogs.clasificaciones_calidad) {
+    fillSelect(invCalidad, state.catalogs.clasificaciones_calidad || [], { placeholder: 'Seleccionar calidad...' });
+    console.log('Selector inv-calidad llenado con', state.catalogs.clasificaciones_calidad.length, 'calidades');
+  }
+  
+  // Llenar selector de tamaño
+  const invTamano = document.getElementById('inv-tamano');
+  if (invTamano && state.catalogs.tamanos_plantas) {
+    fillSelect(invTamano, state.catalogs.tamanos_plantas || [], { label: 'codigo', placeholder: 'Seleccionar tamaño...' });
+    console.log('Selector inv-tamano llenado con', state.catalogs.tamanos_plantas.length, 'tamaños');
+  }
+  
+  console.log('Selectores de inventario inicializados');
+}
+
+// Función para inicializar selectores de despachos
+async function initializeDespachosSelectors() {
+  console.log('Inicializando selectores de despachos...');
+  
+  // Asegurar que los catálogos estén cargados
+  if (!state.catalogs) {
+    await loadCatalogs();
+  }
+  
+  // Llenar selector de estado al despacho
+  const olEstado = document.getElementById('ol-estado');
+  if (olEstado && state.catalogs.estado_salud) {
+    fillSelect(olEstado, state.catalogs.estado_salud || [], { placeholder: 'Seleccionar estado...' });
+    console.log('Selector ol-estado llenado con', state.catalogs.estado_salud.length, 'estados');
+  }
+  
+  console.log('Selectores de despachos inicializados');
+}
 
 // Función para configurar la navegación entre secciones
 function setupNavigation() {
@@ -723,6 +988,34 @@ function setupNavigation() {
     if (targetSection) {
       targetSection.style.display = 'block';
       console.log(`Sección ${targetId} mostrada`);
+      
+      // Inicializar selectores específicos de la sección
+      switch (targetId) {
+        case 'especies':
+          initializeEspeciesSelectors();
+          break;
+        case 'lotes':
+          initializeLotesSelectors();
+          break;
+        case 'fases':
+          initializeFasesSelectors();
+          break;
+        case 'tratamientos':
+          initializeTratamientosSelectors();
+          break;
+        case 'condiciones':
+          initializeCondicionesSelectors();
+          break;
+        case 'plantas':
+          initializePlantasSelectors();
+          break;
+        case 'inventario':
+          initializeInventarioSelectors();
+          break;
+        case 'despachos':
+          initializeDespachosSelectors();
+          break;
+      }
     } else {
       console.warn(`Sección ${targetId} no encontrada`);
     }

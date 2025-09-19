@@ -370,6 +370,16 @@
       if (targetSection) {
         targetSection.style.display = 'block';
         console.log('Sección mostrada:', sectionId);
+        
+        // Inicializar selectores específicos para cada sección
+        const sectionsWithSelectors = ['especies', 'lotes', 'fases', 'tratamientos', 'condiciones', 'plantas', 'inventario', 'despachos'];
+        if (sectionsWithSelectors.includes(sectionId)) {
+          setTimeout(() => {
+            console.log(`Inicializando selectores de ${sectionId}...`);
+            // Trigger para que main.js inicialice los selectores
+            window.dispatchEvent(new CustomEvent(`${sectionId}Loaded`));
+          }, 100);
+        }
       } else {
         console.error('Sección no encontrada:', sectionId);
       }
