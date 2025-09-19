@@ -687,9 +687,69 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Error binding forms
   }
 
+  // Configurar navegación
+  setupNavigation();
+  
   // Logout button - Versión simple y funcional
   setupLogoutButton();
 });
+
+// Función para configurar la navegación entre secciones
+function setupNavigation() {
+  console.log('Configurando navegación...');
+  
+  // Obtener todos los botones de navegación
+  const navButtons = document.querySelectorAll('nav button[data-target]');
+  const sections = document.querySelectorAll('main section');
+  
+  console.log(`Encontrados ${navButtons.length} botones de navegación y ${sections.length} secciones`);
+  
+  // Función para mostrar una sección específica
+  function showSection(targetId) {
+    console.log(`Mostrando sección: ${targetId}`);
+    
+    // Ocultar todas las secciones
+    sections.forEach(section => {
+      section.style.display = 'none';
+    });
+    
+    // Remover clase activa de todos los botones
+    navButtons.forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Mostrar la sección objetivo
+    const targetSection = document.getElementById(targetId);
+    if (targetSection) {
+      targetSection.style.display = 'block';
+      console.log(`Sección ${targetId} mostrada`);
+    } else {
+      console.warn(`Sección ${targetId} no encontrada`);
+    }
+    
+    // Activar el botón correspondiente
+    const activeButton = document.querySelector(`nav button[data-target="${targetId}"]`);
+    if (activeButton) {
+      activeButton.classList.add('active');
+    }
+  }
+  
+  // Configurar event listeners para los botones
+  navButtons.forEach(button => {
+    const target = button.getAttribute('data-target');
+    console.log(`Configurando botón para: ${target}`);
+    
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log(`Botón clickeado: ${target}`);
+      showSection(target);
+    });
+  });
+  
+  // Mostrar dashboard por defecto
+  showSection('dashboard');
+  console.log('Navegación configurada exitosamente');
+}
 
 // Función separada para configurar el botón de logout
 function setupLogoutButton() {
