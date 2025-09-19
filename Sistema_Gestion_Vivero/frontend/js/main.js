@@ -109,8 +109,21 @@ async function ensureAuth() {
 
 async function loadCatalogs(seed = false) {
   try {
-    const data = await api(`catalogs.php${seed ? '?seed=1' : ''}`);
-    state.catalogs = data.catalogs || {};
+    console.log('Cargando catálogos desde base de datos...');
+    // Usar catalogs.php que conecta con la base de datos real
+    let data;
+    try {
+      data = await api(`catalogs.php${seed ? '?seed=1' : ''}`);
+      console.log('Respuesta de catalogs.php (BD real):', data);
+    } catch (e) {
+      console.log('Error con BD real, usando fallback simple:', e.message);
+      data = await api(`catalogs_simple.php${seed ? '?seed=1' : ''}`);
+      console.log('Respuesta de catalogs_simple.php (fallback):', data);
+    }
+    
+    state.catalogs = data.catalogs || data.data || {};
+    console.log('Catálogos cargados en state:', Object.keys(state.catalogs));
+    console.log('Ubicaciones específicamente:', state.catalogs.ubicaciones);
     
     // Fill selects depending on catalogs (con valores por defecto si faltan)
     const tipoEspecie = document.getElementById('tipo-especie');
@@ -153,16 +166,24 @@ async function loadCatalogs(seed = false) {
 }
 
 async function listEspecies() {
+  console.log('Cargando especies desde base de datos...');
   const data = await api('especies.php');
+  console.log('Respuesta de especies.php:', data);
   state.especies = data.data || [];
+  console.log('Especies cargadas:', state.especies.length);
+  
   const tbody = document.getElementById('tabla-especies');
   if (tbody) tbody.innerHTML = state.especies.map(e => `<tr><td>${e.id}</td><td>${e.nombre_comun}</td><td>${e.nombre_cientifico}</td><td>${e.tipo_especie}</td></tr>`).join('');
   const lpEsp = document.getElementById('lp-especie'); if (lpEsp) fillSelect(lpEsp, state.especies, { label: 'nombre_comun' });
 }
 
 async function listLotes() {
+  console.log('Cargando lotes desde base de datos...');
   const data = await api('lotes.php');
+  console.log('Respuesta de lotes.php:', data);
   state.lotes = data.data || [];
+  console.log('Lotes cargados:', state.lotes.length);
+  
   const tbody = document.getElementById('tabla-lotes');
   if (tbody) tbody.innerHTML = state.lotes.map(l => `<tr><td>${l.codigo}</td><td>${l.especie}</td><td>${l.fecha_siembra}</td><td>${l.cantidad_inicial}</td></tr>`).join('');
   
@@ -707,6 +728,27 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Error binding forms
   }
 
+  // Probar carga de catálogos inmediatamente
+  try {
+    console.log('Probando carga de catálogos...');
+    await loadCatalogs();
+    console.log('Catálogos cargados exitosamente:', Object.keys(state.catalogs));
+    
+    // Si los catálogos están vacíos, intentar inicializar la BD
+    if (Object.keys(state.catalogs).length === 0) {
+      console.log('Catálogos vacíos, intentando inicializar base de datos...');
+      try {
+        await api('seed_data.php', { method: 'POST' });
+        console.log('Base de datos inicializada, recargando catálogos...');
+        await loadCatalogs();
+      } catch (seedError) {
+        console.log('Error inicializando BD:', seedError.message);
+      }
+    }
+  } catch (e) {
+    console.error('Error cargando catálogos:', e);
+  }
+
   // Configurar navegación
   setupNavigation();
   
@@ -799,7 +841,27 @@ async function initializeFasesSelectors() {
   
   // Asegurar que los catálogos estén cargados
   if (!state.catalogs || !state.catalogs.fases_produccion) {
+    console.log('Catálogos no disponibles, cargando...');
     await loadCatalogs();
+  }
+  
+  // Verificar si aún faltan ubicaciones después de cargar
+  if (!state.catalogs.ubicaciones) {
+    console.log('Ubicaciones aún no disponibles, intentando carga directa desde BD...');
+    try {
+      let data;
+      try {
+        data = await api('catalogs.php');
+        console.log('Carga directa desde BD real:', data);
+      } catch (e) {
+        console.log('BD real falló, usando fallback simple:', e.message);
+        data = await api('catalogs_simple.php');
+        console.log('Carga directa desde fallback simple:', data);
+      }
+      state.catalogs = { ...state.catalogs, ...(data.catalogs || data.data || {}) };
+    } catch (e) {
+      console.error('Error cargando catálogos directamente:', e);
+    }
   }
   
   // Asegurar que los lotes estén cargados
@@ -809,16 +871,47 @@ async function initializeFasesSelectors() {
   
   // Llenar selector de fases
   const ifFase = document.getElementById('if-fase');
-  if (ifFase && state.catalogs.fases_produccion) {
-    fillSelect(ifFase, state.catalogs.fases_produccion || [], { placeholder: 'Seleccionar fase...' });
-    console.log('Selector if-fase llenado con', state.catalogs.fases_produccion.length, 'fases');
+  if (ifFase) {
+    let fases = state.catalogs?.fases_produccion;
+    
+    // Fallback con datos hardcodeados si no hay fases
+    if (!fases || fases.length === 0) {
+      console.warn('Usando datos hardcodeados para fases');
+      fases = [
+        { id: 1, nombre: 'Germinación' },
+        { id: 2, nombre: 'Crecimiento' },
+        { id: 3, nombre: 'Desarrollo' },
+        { id: 4, nombre: 'Maduración' }
+      ];
+    }
+    
+    fillSelect(ifFase, fases, { placeholder: 'Seleccionar fase...' });
+    console.log('Selector if-fase llenado con', fases.length, 'fases');
   }
   
   // Llenar selector de ubicaciones
   const ifUbicacion = document.getElementById('if-ubicacion');
-  if (ifUbicacion && state.catalogs.ubicaciones) {
-    fillSelect(ifUbicacion, state.catalogs.ubicaciones || [], { label: 'nombre', placeholder: 'Seleccionar ubicación...' });
-    console.log('Selector if-ubicacion llenado con', state.catalogs.ubicaciones.length, 'ubicaciones');
+  console.log('Elemento if-ubicacion encontrado:', !!ifUbicacion);
+  console.log('Catálogos disponibles:', Object.keys(state.catalogs || {}));
+  console.log('Ubicaciones en catálogo:', state.catalogs?.ubicaciones);
+  
+  if (ifUbicacion) {
+    let ubicaciones = state.catalogs?.ubicaciones;
+    
+    // Fallback con datos hardcodeados si no hay ubicaciones
+    if (!ubicaciones || ubicaciones.length === 0) {
+      console.warn('Usando datos hardcodeados para ubicaciones');
+      ubicaciones = [
+        { id: 1, nombre: 'Invernadero A' },
+        { id: 2, nombre: 'Invernadero B' },
+        { id: 3, nombre: 'Área Externa' }
+      ];
+    }
+    
+    fillSelect(ifUbicacion, ubicaciones, { label: 'nombre', placeholder: 'Seleccionar ubicación...' });
+    console.log('Selector if-ubicacion llenado con', ubicaciones.length, 'ubicaciones');
+  } else {
+    console.error('Elemento if-ubicacion no encontrado en el DOM');
   }
   
   console.log('Selectores de fases inicializados');
