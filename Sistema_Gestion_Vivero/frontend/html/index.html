@@ -6,8 +6,6 @@
   <title>Dashboard - Vivero Bosques del Sur</title>
   <link rel="stylesheet" href="../css/styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script type="module" src="../js/navigation.js"></script>
-  <script type="module" src="../js/main.js?v=${new Date().getTime()}"></script>
 </head>
 <body>
   <header>
@@ -24,6 +22,7 @@
             class="btn-logout" 
             title="Cerrar sesión actual y volver al inicio"
             aria-label="Cerrar sesión de usuario"
+            onclick="handleLogoutClick()"
           >
             <span class="logout-icon">🚪</span>
             <span class="logout-text">Cerrar Sesión</span>
@@ -345,5 +344,63 @@
       <!-- Footer content -->
     </div>
   </footer>
+  <!-- Scripts al final del body -->
+  <script type="module" src="../js/main.js"></script>
+  
+  <!-- Función de logout global como fallback -->
+  <script>
+    async function handleLogoutClick() {
+      console.log('Logout clicked via onclick handler');
+      
+      const confirmLogout = confirm('¿Estás seguro de que deseas cerrar la sesión?');
+      if (!confirmLogout) return;
+
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.innerHTML = '<span class="logout-icon">⏳</span><span class="logout-text">Cerrando...</span>';
+        logoutBtn.disabled = true;
+      }
+
+      try {
+        // Llamar a la API de logout
+        const response = await fetch('../../backend/php/api/auth.php?action=logout', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        console.log('Logout API response:', response.status);
+      } catch (e) {
+        console.log('Logout API failed:', e.message);
+      }
+
+      // Limpiar datos locales
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('Local data cleared');
+
+      // Mostrar éxito
+      if (logoutBtn) {
+        logoutBtn.innerHTML = '<span class="logout-icon">✓</span><span class="logout-text">¡Sesión cerrada!</span>';
+      }
+
+      // Redirigir al login
+      setTimeout(() => {
+        console.log('Redirecting to login...');
+        window.location.href = './login.html';
+      }, 800);
+    }
+
+    // También configurar el evento cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        console.log('Configurando logout button via DOMContentLoaded');
+        // Remover onclick anterior si existe
+        logoutBtn.removeAttribute('onclick');
+        logoutBtn.addEventListener('click', handleLogoutClick);
+      }
+    });
+  </script>
 </body>
 </html>

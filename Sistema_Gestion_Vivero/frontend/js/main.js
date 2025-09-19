@@ -688,51 +688,68 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Logout button - Versión simple y funcional
-  const logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async (event) => {
-      event.preventDefault();
-
-      const confirmLogout = confirm('¿Estás seguro de que deseas cerrar la sesión?');
-      if (!confirmLogout) return;
-
-      // Mostrar estado de carga
-      const originalContent = logoutBtn.innerHTML;
-      logoutBtn.innerHTML = '<span class="logout-icon">⏳</span><span class="logout-text">Cerrando...</span>';
-      logoutBtn.disabled = true;
-
-      try {
-        // Llamar a la API de logout
-        try {
-          await api('auth.php?action=logout', { method: 'POST' });
-        } catch (e) {
-          // Incluso si falla la API, continuar con logout local
-          console.log('Logout API failed, but continuing with local logout');
-        }
-
-        // Limpiar datos locales
-        localStorage.clear();
-        sessionStorage.clear();
-
-        // Mostrar éxito brevemente
-        logoutBtn.innerHTML = '<span class="logout-icon">✓</span><span class="logout-text">¡Sesión cerrada!</span>';
-
-        // Redirigir al login después de un breve delay
-        setTimeout(() => {
-          window.location.href = './login.html';
-        }, 800);
-
-      } catch (error) {
-        console.error('Error en logout:', error);
-
-        // Mostrar error
-        logoutBtn.innerHTML = '<span class="logout-icon">❌</span><span class="logout-text">Error</span>';
-
-        // Redirigir por seguridad después de un breve delay
-        setTimeout(() => {
-          window.location.href = './login.html';
-        }, 1000);
-      }
-    });
-  }
+  setupLogoutButton();
 });
+
+// Función separada para configurar el botón de logout
+function setupLogoutButton() {
+  const logoutBtn = document.getElementById('logout-btn');
+  if (!logoutBtn) {
+    console.warn('Botón de logout no encontrado');
+    return;
+  }
+
+  console.log('Configurando botón de logout...');
+  
+  logoutBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+    console.log('Logout button clicked');
+
+    const confirmLogout = confirm('¿Estás seguro de que deseas cerrar la sesión?');
+    if (!confirmLogout) return;
+
+    // Mostrar estado de carga
+    const originalContent = logoutBtn.innerHTML;
+    logoutBtn.innerHTML = '<span class="logout-icon">⏳</span><span class="logout-text">Cerrando...</span>';
+    logoutBtn.disabled = true;
+
+    try {
+      // Llamar a la API de logout
+      try {
+        await api('auth.php?action=logout', { method: 'POST' });
+        console.log('Logout API call successful');
+      } catch (e) {
+        // Incluso si falla la API, continuar con logout local
+        console.log('Logout API failed, but continuing with local logout:', e.message);
+      }
+
+      // Limpiar datos locales
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('Local data cleared');
+
+      // Mostrar éxito brevemente
+      logoutBtn.innerHTML = '<span class="logout-icon">✓</span><span class="logout-text">¡Sesión cerrada!</span>';
+
+      // Redirigir al login después de un breve delay
+      setTimeout(() => {
+        console.log('Redirecting to login...');
+        window.location.href = './login.html';
+      }, 800);
+
+    } catch (error) {
+      console.error('Error en logout:', error);
+
+      // Mostrar error
+      logoutBtn.innerHTML = '<span class="logout-icon">❌</span><span class="logout-text">Error</span>';
+
+      // Redirigir por seguridad después de un breve delay
+      setTimeout(() => {
+        console.log('Redirecting to login after error...');
+        window.location.href = './login.html';
+      }, 1000);
+    }
+  });
+
+  console.log('Logout button configured successfully');
+}
